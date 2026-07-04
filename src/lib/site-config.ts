@@ -6,7 +6,7 @@ export const siteConfig = {
     "TechParivar is a Shopify and Shopify Plus development agency helping D2C and ecommerce brands across the US, UK, Canada, Australia, UAE, and India build, migrate, and scale high-performing stores.",
   url: "https://www.techparivar.com",
   email: "support@techparivar.com",
-  phone: "+91 8384877543",
+  phone: "+918384877543",
   whatsapp: "+918384877543",
   calendlyUrl: "https://calendly.com/techparivar/consultation",
   social: {

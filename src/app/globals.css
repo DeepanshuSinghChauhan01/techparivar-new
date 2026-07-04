@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+:root {
+  /* Surfaces */
+  --bg-base: #0b0f19;
+  --bg-panel: #121826;
+  --bg-card: #161d2c;
+  --bg-card-hover: #1b2334;
+  --border-subtle: #232b3d;
+  --border-default: #2a3346;
+
+  /* Text */
+  --text-primary: #e8ebf2;
+  --text-secondary: #aeb6c9;
+  --text-muted: #6b7488;
+
+  /* Accents */
+  --accent-blue: #5b8def;
+  --accent-blue-bright: #7ba3ff;
+  --accent-teal: #3dd9c4;
+  --accent-amber: #f0b057;
+  --accent-rose: #ef6f6f;
+
+  /* Fonts — premium system stacks (no external font fetch required) */
+  --font-display: "Inter", -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, Menlo, Consolas, monospace;
+
+  /* ============================================================
+     STITCH DESIGN IMPORT — Client Portal / premium UI kit tokens.
+     Additive only: new variable names, nothing above is modified,
+     so every existing page/component keeps rendering identically.
+     Used by src/components/portal-ui, src/components/portal, and
+     available site-wide for new premium accents (e.g. Client
+     Portal nav CTA, badges).
+     ============================================================ */
+  --surface: var(--bg-base);
+  --surface-dim: #0b0f19;
+  --surface-bright: #363940;
+  --surface-container-lowest: #080b12;
+  --surface-container-low: var(--bg-panel);
+  --surface-container: var(--bg-card);
+  --surface-container-high: var(--bg-card-hover);
+  --surface-container-highest: #232c40;
+  --on-surface: var(--text-primary);
+  --on-surface-variant: var(--text-secondary);
+  --portal-outline: var(--border-default);
+  --portal-outline-variant: var(--border-subtle);
+  --portal-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-fill: rgba(11, 15, 25, 0.7);
+
+  --vibrant-orange: #ff5c00;
+  --primary-fixed: #ffdbce;
+  --primary-fixed-dim: #ffb59a;
+  --electric-blue: var(--accent-blue);
+  --mint-green: var(--accent-teal);
+  --portal-error: #ff6b6b;
+
+  --font-portal-display: var(--font-hanken), "Hanken Grotesk", var(--font-display);
+  --font-portal-data: var(--font-jbmono), "JetBrains Mono", var(--font-mono);
+}
+
+@theme inline {
+  --color-base: var(--bg-base);
+  --color-panel: var(--bg-panel);
+  --color-card: var(--bg-card);
+  --color-card-hover: var(--bg-card-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-bright: var(--accent-blue-bright);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-rose: var(--accent-rose);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* Stitch design import — additive utility tokens */
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-portal-outline: var(--portal-outline);
+  --color-portal-outline-variant: var(--portal-outline-variant);
+  --color-portal-border-subtle: var(--portal-border-subtle);
+  --color-glass-fill: var(--glass-fill);
+  --color-vibrant-orange: var(--vibrant-orange);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-electric-blue: var(--electric-blue);
+  --color-mint-green: var(--mint-green);
+  --color-portal-error: var(--portal-error);
+
+  --font-portal-display: var(--font-portal-display);
+  --font-portal-data: var(--font-portal-data);
+
+  /* shadcn-style semantic aliases consumed verbatim by the ported
+     Radix component kit in src/components/portal-ui — new keys only,
+     none of these class names (bg-primary, text-foreground, etc.)
+     are used anywhere in the existing site, so nothing is overridden. */
+  --color-background: var(--surface);
+  --color-foreground: var(--on-surface);
+  --color-card-foreground: var(--on-surface);
+  --color-popover: var(--surface-container-high);
+  --color-popover-foreground: var(--on-surface);
+  --color-primary: var(--vibrant-orange);
+  --color-primary-foreground: #fff7f2;
+  --color-muted: var(--surface-container-low);
+  --color-muted-foreground: var(--on-surface-variant);
+  --color-accent: var(--surface-container-high);
+  --color-accent-foreground: var(--on-surface);
+  --color-destructive: var(--portal-error);
+  --color-destructive-foreground: #2a0a06;
+  --color-border: var(--portal-border-subtle);
+  --color-input: var(--portal-border-subtle);
+  --color-ring: var(--vibrant-orange);
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent-blue);
+  color: #0b0f19;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.bg-spotlight {
+  background: radial-gradient(circle at 50% 0%, rgba(91, 141, 239, 0.16), transparent 60%);
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(95deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.surface-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Standard section vertical rhythm — scales down on mobile instead of
+   repeating the same large desktop padding at every breakpoint. */
+.section-py {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+@media (min-width: 640px) {
+  .section-py {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+@media (min-width: 1024px) {
+  .section-py {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+
+.bg-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmlsdGVyIGlkPSdub2lzZSc+PGZlVHVyYnVsZW5jZSB0eXBlPSdmcmFjdGFsTm9pc2UnIGJhc2VGcmVxdWVuY3k9JzAuOCcgbnVtT2N0YXZlcz0nMicgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiLz48L3N2Zz4=");
+}
+
+/* ============================================================
+   STITCH DESIGN IMPORT — utility classes for the premium Client
+   Portal surface and any new premium components. Purely additive.
+   ============================================================ */
+.portal-radius-lg {
+  border-radius: 0.75rem;
+}
+.glass-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+.vibrant-glow {
+  box-shadow: 0 0 20px rgba(255, 92, 0, 0.25);
+}
+.text-gradient-orange {
+  background: linear-gradient(90deg, #ff5c00 0%, #ffb59a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.font-portal-display {
+  font-family: var(--font-portal-display);
+}
+.font-portal-data {
+  font-family: var(--font-portal-data);
+}
+.bg-grid-fade {
+  background-image: radial-gradient(circle at 20% 0%, rgba(255, 92, 0, 0.12), transparent 45%),
+    radial-gradient(circle at 100% 20%, rgba(91, 141, 239, 0.08), transparent 40%);
+}

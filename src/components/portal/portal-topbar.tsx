@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import { Bell, LogOut, Menu, Plus, Search, Settings, UserCircle } from "lucide-react";
 
 import { Button } from "@/components/portal-ui/button";
@@ -121,10 +122,11 @@ export function PortalTopbar() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild variant="destructive">
-              <Link href="/login">
-                <LogOut className="size-4" /> Sign Out
-              </Link>
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut className="size-4" /> Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

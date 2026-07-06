@@ -16,6 +16,7 @@ import { Card } from "@/components/portal-ui/card";
 import { Badge } from "@/components/portal-ui/badge";
 import { Avatar, AvatarFallback } from "@/components/portal-ui/avatar";
 import { Progress } from "@/components/portal-ui/progress";
+import { requireUser } from "@/lib/auth-helpers";
 import {
   currentUser,
   storeHealth,
@@ -42,14 +43,17 @@ const metricIconMap = {
   ShoppingCart,
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await requireUser();
+  const firstName = user.name?.split(" ")[0] || "there";
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Welcome banner */}
       <Card className="flex-row flex-wrap items-center justify-between gap-6 border-border/80 bg-surface-container p-8">
         <div className="max-w-lg">
           <h1 className="font-portal-display text-2xl font-bold md:text-3xl">
-            Good morning, {currentUser.firstName}.
+            Good morning, {firstName}.
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-on-surface-variant md:text-base">
             {storeHealth.summary.split(storeHealth.performanceDelta)[0]}

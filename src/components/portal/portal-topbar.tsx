@@ -26,7 +26,7 @@ import {
 } from "@/components/portal-ui/dropdown-menu";
 import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { cn } from "@/lib/utils";
-import { currentUser, notifications } from "@/data/portal";
+import { notifications } from "@/data/portal";
 
 const topNav = [
   { label: "Dashboard", href: "/portal/dashboard" },
@@ -36,7 +36,26 @@ const topNav = [
   { label: "Knowledge Base", href: "/portal/knowledge-base" },
 ];
 
-export function PortalTopbar() {
+function getInitials(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]!.toUpperCase())
+      .join("") || "U"
+  );
+}
+
+export function PortalTopbar({
+  name,
+  email,
+  company,
+}: {
+  name: string;
+  email: string;
+  company?: string | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -99,15 +118,15 @@ export function PortalTopbar() {
           <DropdownMenuTrigger asChild>
             <button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
               <Avatar>
-                <AvatarFallback>{currentUser.avatarInitials}</AvatarFallback>
+                <AvatarFallback>{getInitials(name)}</AvatarFallback>
               </Avatar>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
-              {currentUser.name}
+              {name}
               <p className="mt-0.5 text-xs font-normal text-on-surface-variant">
-                {currentUser.email}
+                {company ? `${company} • ${email}` : email}
               </p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

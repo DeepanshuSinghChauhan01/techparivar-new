@@ -72,17 +72,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // got id/role persisted) by re-deriving them from the database once,
       // using the standard JWT `sub` claim. After this the encoded cookie
       // carries valid claims, so this only runs for a token's first request.
+      // A failed lookup (deleted user, or a transient DB error) must never
+      // throw here — this is a best-effort repair, not a required step, and
+      // an uncaught exception in this callback takes down the entire auth
+      // flow (Auth.js surfaces it as a generic configuration error).
       if (!hasValidClaims && typeof token.sub === "string") {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub },
-          select: { id: true, role: true },
-        });
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { id: true, role: true },
+          });
 
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-        } else {
-          // User no longer exists (or token.sub is bogus): cannot recover.
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+          } else {
+            // User no longer exists: cannot recover.
+            token.id = undefined;
+            token.role = undefined;
+          }
+        } catch (err) {
+          console.error("[auth] jwt self-heal lookup failed:", err);
           token.id = undefined;
           token.role = undefined;
         }

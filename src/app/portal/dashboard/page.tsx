@@ -9,21 +9,22 @@ import {
   ShoppingCart,
   Gauge,
   Video,
+  FolderKanban,
+  Rocket,
+  LifeBuoy,
 } from "lucide-react";
 
 import { Button } from "@/components/portal-ui/button";
 import { Card } from "@/components/portal-ui/card";
 import { Badge } from "@/components/portal-ui/badge";
-import { Avatar, AvatarFallback } from "@/components/portal-ui/avatar";
-import { Progress } from "@/components/portal-ui/progress";
 import { requireUser } from "@/lib/auth-helpers";
+import { getMyClientProfileId } from "@/lib/ownership";
+import { prisma } from "@/lib/prisma";
 import {
   currentUser,
   storeHealth,
   nextMeeting,
-  currentProjects,
   recentUpdates,
-  openTicketsPreview,
   storeSpotlight,
 } from "@/data/portal";
 
@@ -43,9 +44,69 @@ const metricIconMap = {
   ShoppingCart,
 };
 
+const statusVariant = {
+  PLANNING: "secondary",
+  ACTIVE: "success",
+  ON_HOLD: "warning",
+  COMPLETED: "info",
+  CANCELLED: "destructive",
+} as const;
+
+const priorityVariant = {
+  LOW: "secondary",
+  MEDIUM: "info",
+  HIGH: "warning",
+  URGENT: "destructive",
+} as const;
+
+function titleCase(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export default async function DashboardPage() {
   const user = await requireUser();
   const firstName = user.name?.split(" ")[0] || "there";
+  const clientProfileId = await getMyClientProfileId(user);
+
+  const [totalProjects, activeProjects, openTicketsCount, recentProjects, openTickets] =
+    clientProfileId
+      ? await Promise.all([
+          prisma.project.count({ where: { clientId: clientProfileId } }),
+          prisma.project.count({
+            where: { clientId: clientProfileId, status: "ACTIVE" },
+          }),
+          prisma.ticket.count({
+            where: {
+              clientId: clientProfileId,
+              status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
+            },
+          }),
+          prisma.project.findMany({
+            where: { clientId: clientProfileId },
+            orderBy: { updatedAt: "desc" },
+            take: 3,
+            select: { id: true, name: true, status: true, priority: true, dueDate: true },
+          }),
+          prisma.ticket.findMany({
+            where: {
+              clientId: clientProfileId,
+              status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
+            },
+            orderBy: { updatedAt: "desc" },
+            take: 3,
+            select: { id: true, subject: true, priority: true, updatedAt: true },
+          }),
+        ])
+      : [0, 0, 0, [], []];
+
+  const workStats = [
+    { label: "Total Projects", value: totalProjects, icon: FolderKanban },
+    { label: "Active Projects", value: activeProjects, icon: Rocket },
+    { label: "Open Tickets", value: openTicketsCount, icon: LifeBuoy },
+  ];
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -122,47 +183,74 @@ export default async function DashboardPage() {
             })}
           </div>
 
+          {/* Project / ticket stats */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {workStats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <Card key={stat.label} className="gap-4 p-5">
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <Icon className="size-4" />
+                  </span>
+                  <div>
+                    <p className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+                      {stat.label}
+                    </p>
+                    <p className="mt-1 font-portal-display text-2xl font-bold">
+                      {stat.value}
+                    </p>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
           {/* Current projects */}
           <Card className="gap-5 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-portal-display text-lg font-semibold">Current Projects</h2>
-                <p className="text-xs text-on-surface-variant">Active development sprints</p>
+                <p className="text-xs text-on-surface-variant">Recently updated engagements</p>
               </div>
               <Link
                 href="/portal/projects"
                 className="text-sm font-semibold text-primary"
               >
-                View Roadmap
+                View All
               </Link>
             </div>
-            <div className="space-y-5">
-              {currentProjects.map((project) => (
-                <Link
-                  key={project.id}
-                  href={`/portal/projects/${project.id}`}
-                  className="block rounded-lg p-3 -mx-3 transition-colors hover:bg-white/5"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold">{project.name}</p>
-                    <span className="text-sm font-semibold text-primary">
-                      {project.progress}%
-                    </span>
-                  </div>
-                  <Progress value={project.progress} className="mt-3" />
-                  <div className="mt-3 flex items-center justify-between">
-                    <Avatar className={`size-6 ${project.ownerColor}`}>
-                      <AvatarFallback className="bg-transparent text-[10px] text-primary-foreground">
-                        {project.ownerInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-portal-data text-[11px] uppercase tracking-wider text-on-surface-variant">
-                      {project.eta}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {recentProjects.length === 0 ? (
+              <p className="py-6 text-center text-sm text-on-surface-variant">
+                No projects yet.
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {recentProjects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/portal/projects/${project.id}`}
+                    className="block rounded-lg p-3 -mx-3 transition-colors hover:bg-white/5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">{project.name}</p>
+                      <Badge variant={statusVariant[project.status]}>
+                        {titleCase(project.status)}
+                      </Badge>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <Badge variant={priorityVariant[project.priority]}>
+                        {titleCase(project.priority)}
+                      </Badge>
+                      <span className="font-portal-data text-[11px] uppercase tracking-wider text-on-surface-variant">
+                        {project.dueDate
+                          ? `Due ${project.dueDate.toLocaleDateString()}`
+                          : "No due date"}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </Card>
 
           {/* Recent updates */}
@@ -213,26 +301,32 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between">
               <h2 className="font-portal-display text-base font-semibold">Open Tickets</h2>
               <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                {openTicketsPreview.length}
+                {openTicketsCount}
               </span>
             </div>
-            <div className="space-y-3">
-              {openTicketsPreview.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  className="rounded-lg border border-border/60 bg-surface-container-low p-3"
-                >
-                  <Badge
-                    variant={ticket.priority === "Urgent" ? "destructive" : "success"}
-                    className="mb-2"
+            {openTickets.length === 0 ? (
+              <p className="py-4 text-center text-xs text-on-surface-variant">
+                No open tickets right now.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {openTickets.map((ticket) => (
+                  <Link
+                    key={ticket.id}
+                    href={`/portal/support/${ticket.id}`}
+                    className="block rounded-lg border border-border/60 bg-surface-container-low p-3 transition-colors hover:border-primary/50"
                   >
-                    {ticket.priority}
-                  </Badge>
-                  <p className="text-sm font-semibold">{ticket.title}</p>
-                  <p className="mt-1 text-xs text-on-surface-variant">{ticket.updated}</p>
-                </div>
-              ))}
-            </div>
+                    <Badge variant={priorityVariant[ticket.priority]} className="mb-2">
+                      {titleCase(ticket.priority)}
+                    </Badge>
+                    <p className="text-sm font-semibold">{ticket.subject}</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">
+                      Updated {ticket.updatedAt.toLocaleDateString()}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
             <Link
               href="/portal/support"
               className="text-center text-sm font-semibold text-primary"

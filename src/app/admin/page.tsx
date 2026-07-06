@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Users, UserCheck, UserX, ShieldAlert } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  UserX,
+  ShieldAlert,
+  FolderKanban,
+  Rocket,
+  LifeBuoy,
+  AlertTriangle,
+} from "lucide-react";
 
 import { Card } from "@/components/portal-ui/card";
 import { Badge } from "@/components/portal-ui/badge";
@@ -17,11 +26,25 @@ const statusVariant = {
 } as const;
 
 export default async function AdminDashboardPage() {
-  const [total, active, inactive, suspended, recentClients] = await Promise.all([
+  const [
+    total,
+    active,
+    inactive,
+    suspended,
+    totalProjects,
+    activeProjects,
+    openTickets,
+    urgentTickets,
+    recentClients,
+  ] = await Promise.all([
     prisma.clientProfile.count(),
     prisma.clientProfile.count({ where: { status: "ACTIVE" } }),
     prisma.clientProfile.count({ where: { status: "INACTIVE" } }),
     prisma.clientProfile.count({ where: { status: "SUSPENDED" } }),
+    prisma.project.count(),
+    prisma.project.count({ where: { status: "ACTIVE" } }),
+    prisma.ticket.count({ where: { status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] } } }),
+    prisma.ticket.count({ where: { priority: "URGENT", status: { notIn: ["RESOLVED", "CLOSED"] } } }),
     prisma.clientProfile.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -35,11 +58,18 @@ export default async function AdminDashboardPage() {
     }),
   ]);
 
-  const stats = [
+  const clientStats = [
     { label: "Total Clients", value: total, icon: Users },
     { label: "Active Clients", value: active, icon: UserCheck },
     { label: "Inactive Clients", value: inactive, icon: UserX },
     { label: "Suspended Clients", value: suspended, icon: ShieldAlert },
+  ];
+
+  const workStats = [
+    { label: "Total Projects", value: totalProjects, icon: FolderKanban },
+    { label: "Active Projects", value: activeProjects, icon: Rocket },
+    { label: "Open Tickets", value: openTickets, icon: LifeBuoy },
+    { label: "Urgent Tickets", value: urgentTickets, icon: AlertTriangle },
   ];
 
   return (
@@ -49,12 +79,33 @@ export default async function AdminDashboardPage() {
           Admin Dashboard
         </h1>
         <p className="mt-1 text-sm text-on-surface-variant">
-          Client account overview
+          Client, project, and ticket overview
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+        {workStats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.label} className="gap-4 p-5">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                <Icon className="size-4" />
+              </span>
+              <div>
+                <p className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+                  {stat.label}
+                </p>
+                <p className="mt-1 font-portal-display text-2xl font-bold">
+                  {stat.value}
+                </p>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {clientStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label} className="gap-4 p-5">

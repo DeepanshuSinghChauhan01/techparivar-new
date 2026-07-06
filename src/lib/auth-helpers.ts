@@ -9,10 +9,31 @@ export type SessionUser = {
   role: "ADMIN" | "CLIENT";
 };
 
-/** Returns the current session user, or null if unauthenticated. No redirects. */
+/**
+ * Returns the current session user, or null if unauthenticated OR if the
+ * session/user shape is malformed (missing id, missing/invalid role — e.g. a
+ * stale cookie or a deleted user). Never trusts the declared type alone.
+ * No redirects.
+ */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const session = await auth();
-  return session?.user ?? null;
+  const user = session?.user;
+
+  if (
+    !user ||
+    typeof user.id !== "string" ||
+    !user.id ||
+    (user.role !== "ADMIN" && user.role !== "CLIENT")
+  ) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
 }
 
 /** For Server Components/pages: requires any authenticated user, else redirects to /login. */

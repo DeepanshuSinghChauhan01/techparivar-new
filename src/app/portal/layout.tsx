@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-
-import { auth } from "@/auth";
+import { requireUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { PortalTopbar } from "@/components/portal/portal-topbar";
@@ -10,16 +8,12 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/login");
-  }
+  const user = await requireUser();
 
   const clientProfile =
-    session.user.role === "CLIENT"
+    user.role === "CLIENT"
       ? await prisma.clientProfile.findUnique({
-          where: { userId: session.user.id },
+          where: { userId: user.id },
           select: { companyName: true },
         })
       : null;
@@ -32,8 +26,8 @@ export default async function PortalLayout({
 
       <div className="flex min-h-screen flex-col lg:pl-[260px]">
         <PortalTopbar
-          name={session.user.name ?? "User"}
-          email={session.user.email ?? ""}
+          name={user.name ?? "User"}
+          email={user.email ?? ""}
           company={clientProfile?.companyName}
         />
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">

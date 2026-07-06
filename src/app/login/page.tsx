@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import LoginView from "./login-view";
 
 export const metadata: Metadata = {
@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (session) {
+  if (user) {
     redirect("/portal/dashboard");
   }
 

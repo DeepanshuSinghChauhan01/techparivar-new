@@ -28,9 +28,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  clientProfile  ClientProfile?
-  ticketsCreated Ticket[]       @relation("TicketCreatedBy")
-  filesUploaded  ManagedFile[]  @relation("FileUploadedBy")
+  clientProfile   ClientProfile?
+  ticketsCreated  Ticket[]       @relation("TicketCreatedBy")
+  filesUploaded   ManagedFile[]  @relation("FileUploadedBy")
+  projectsCreated Project[]      @relation("ProjectCreatedBy")
 }
 
 model ClientProfile {
@@ -69,16 +70,22 @@ enum ProjectPriority {
 
 model Project {
   id          String          @id @default(cuid())
+  projectCode String          @unique
   name        String
   description String?
   status      ProjectStatus   @default(PLANNING)
   priority    ProjectPriority @default(MEDIUM)
+  progress    Int             @default(0)
 
   clientId String
   client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  startDate DateTime?
-  dueDate   DateTime?
+  createdById String?
+  createdBy   User?   @relation("ProjectCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  startDate   DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +97,7 @@ model Project {
   @@index([clientId])
   @@index([status])
   @@index([createdAt])
+  @@index([createdById])
 }
 
 enum TicketStatus {

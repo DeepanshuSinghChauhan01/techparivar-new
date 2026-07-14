@@ -92,6 +92,7 @@ export default async function AdminProjectsPage({
       ? {
           OR: [
             { name: { contains: q, mode: "insensitive" } },
+            { projectCode: { contains: q, mode: "insensitive" } },
             { client: { companyName: { contains: q, mode: "insensitive" } } },
             { client: { user: { name: { contains: q, mode: "insensitive" } } } },
           ],
@@ -108,9 +109,11 @@ export default async function AdminProjectsPage({
       take: PAGE_SIZE,
       select: {
         id: true,
+        projectCode: true,
         name: true,
         status: true,
         priority: true,
+        progress: true,
         startDate: true,
         dueDate: true,
         createdAt: true,
@@ -173,7 +176,7 @@ export default async function AdminProjectsPage({
                 id="q"
                 name="q"
                 defaultValue={q}
-                placeholder="Project, client, or company..."
+                placeholder="Project, code, client, or company..."
                 className="pl-10"
               />
             </div>
@@ -265,6 +268,7 @@ export default async function AdminProjectsPage({
                   <th className="px-5 py-3 font-medium">Client</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium">Priority</th>
+                  <th className="px-5 py-3 font-medium">Progress</th>
                   <th className="px-5 py-3 font-medium">Due</th>
                   <th className="px-5 py-3 text-right font-medium">Actions</th>
                 </tr>
@@ -275,7 +279,12 @@ export default async function AdminProjectsPage({
                     key={project.id}
                     className="transition-colors hover:bg-white/5"
                   >
-                    <td className="px-5 py-4 font-semibold">{project.name}</td>
+                    <td className="px-5 py-4 font-semibold">
+                      {project.name}
+                      <span className="block font-portal-data text-xs font-normal text-on-surface-variant">
+                        {project.projectCode}
+                      </span>
+                    </td>
                     <td className="px-5 py-4 text-on-surface-variant">
                       {project.client.companyName}
                       <span className="block text-xs">
@@ -291,6 +300,19 @@ export default async function AdminProjectsPage({
                       <Badge variant={priorityVariant[project.priority]}>
                         {titleCase(project.priority)}
                       </Badge>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-container-high">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-on-surface-variant">
+                          {project.progress}%
+                        </span>
+                      </div>
                     </td>
                     <td className="px-5 py-4 text-on-surface-variant">
                       {project.dueDate

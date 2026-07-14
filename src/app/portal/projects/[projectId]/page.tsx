@@ -45,12 +45,15 @@ async function getOwnedProject(projectId: string) {
     where: { id: projectId },
     select: {
       id: true,
+      projectCode: true,
       name: true,
       description: true,
       status: true,
       priority: true,
+      progress: true,
       startDate: true,
       dueDate: true,
+      completedAt: true,
       updatedAt: true,
       clientId: true,
       tickets: {
@@ -98,6 +101,9 @@ export default async function PortalProjectDetailPage({
         <h1 className="mt-3 font-portal-display text-2xl font-bold md:text-3xl">
           {project.name}
         </h1>
+        <p className="mt-1 font-portal-data text-xs text-on-surface-variant">
+          {project.projectCode}
+        </p>
         {project.description && (
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-on-surface-variant">
             {project.description}
@@ -106,6 +112,21 @@ export default async function PortalProjectDetailPage({
       </div>
 
       <Card className="gap-6 p-6">
+        <div>
+          <div className="flex items-center justify-between">
+            <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+              Progress
+            </dt>
+            <span className="text-sm font-semibold">{project.progress}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-container-high">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${project.progress}%` }}
+            />
+          </div>
+        </div>
+
         <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div>
             <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
@@ -121,6 +142,14 @@ export default async function PortalProjectDetailPage({
             </dt>
             <dd className="mt-1 text-sm font-semibold">
               {project.dueDate ? project.dueDate.toLocaleDateString() : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+              Completed
+            </dt>
+            <dd className="mt-1 text-sm font-semibold">
+              {project.completedAt ? project.completedAt.toLocaleDateString() : "—"}
             </dd>
           </div>
           <div>

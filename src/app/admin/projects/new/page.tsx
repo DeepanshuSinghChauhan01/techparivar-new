@@ -38,6 +38,7 @@ export default async function NewProjectPage() {
             description: "",
             status: "PLANNING",
             priority: "MEDIUM",
+            progress: 0,
             startDate: "",
             dueDate: "",
           }}

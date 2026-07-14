@@ -18,10 +18,12 @@ async function getProject(projectId: string) {
     where: { id: projectId },
     select: {
       id: true,
+      projectCode: true,
       name: true,
       description: true,
       status: true,
       priority: true,
+      progress: true,
       clientId: true,
       startDate: true,
       dueDate: true,
@@ -58,6 +60,7 @@ export default async function EditProjectPage({
         <ProjectForm
           action={updateProjectAction}
           projectId={project.id}
+          projectCode={project.projectCode}
           clients={clients.map((c) => ({
             id: c.id,
             companyName: c.companyName,
@@ -69,6 +72,7 @@ export default async function EditProjectPage({
             description: project.description ?? "",
             status: project.status,
             priority: project.priority,
+            progress: project.progress,
             startDate: toDateInputValue(project.startDate),
             dueDate: toDateInputValue(project.dueDate),
           }}

@@ -44,12 +44,15 @@ async function getProject(projectId: string) {
     where: { id: projectId },
     select: {
       id: true,
+      projectCode: true,
       name: true,
       description: true,
       status: true,
       priority: true,
+      progress: true,
       startDate: true,
       dueDate: true,
+      completedAt: true,
       createdAt: true,
       updatedAt: true,
       client: {
@@ -57,6 +60,9 @@ async function getProject(projectId: string) {
           companyName: true,
           user: { select: { id: true, name: true, email: true } },
         },
+      },
+      createdBy: {
+        select: { name: true, email: true },
       },
       tickets: {
         orderBy: { createdAt: "desc" },
@@ -104,6 +110,9 @@ export default async function AdminProjectDetailPage({
               {titleCase(project.priority)}
             </Badge>
           </div>
+          <p className="mt-1 font-portal-data text-xs text-on-surface-variant">
+            {project.projectCode}
+          </p>
           <p className="mt-1 text-sm text-on-surface-variant">
             <Link
               href={`/admin/clients/${project.client.user.id}`}
@@ -129,6 +138,21 @@ export default async function AdminProjectDetailPage({
       </div>
 
       <Card className="gap-6 p-6">
+        <div>
+          <div className="flex items-center justify-between">
+            <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+              Progress
+            </dt>
+            <span className="text-sm font-semibold">{project.progress}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-container-high">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${project.progress}%` }}
+            />
+          </div>
+        </div>
+
         <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
@@ -144,6 +168,22 @@ export default async function AdminProjectDetailPage({
             </dt>
             <dd className="mt-1 text-sm font-semibold">
               {project.dueDate ? project.dueDate.toLocaleDateString() : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+              Completed
+            </dt>
+            <dd className="mt-1 text-sm font-semibold">
+              {project.completedAt ? project.completedAt.toLocaleDateString() : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-portal-data text-[10px] uppercase tracking-wider text-on-surface-variant">
+              Created By
+            </dt>
+            <dd className="mt-1 text-sm font-semibold">
+              {project.createdBy?.name ?? "—"}
             </dd>
           </div>
           <div>

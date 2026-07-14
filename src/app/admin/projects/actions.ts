@@ -2,9 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { Prisma, ProjectStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { generateProjectCode } from "@/lib/project-code";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -18,6 +20,18 @@ export type ActionState = {
 async function assertAdmin() {
   const user = await getCurrentUser();
   return user && user.role === "ADMIN" ? user : null;
+}
+
+/** Unique-constraint violation on `projectCode` (P2002) — extremely unlikely given
+ * the pre-check in generateProjectCode(), but a concurrent request could still
+ * win the race. Retried a few times with a freshly generated code. */
+function isProjectCodeConflict(err: unknown): boolean {
+  return (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === "P2002" &&
+    Array.isArray(err.meta?.target) &&
+    err.meta.target.includes("projectCode")
+  );
 }
 
 export async function createProjectAction(
@@ -35,6 +49,7 @@ export async function createProjectAction(
     description: formData.get("description"),
     status: formData.get("status") || undefined,
     priority: formData.get("priority") || undefined,
+    progress: formData.get("progress"),
     startDate: formData.get("startDate"),
     dueDate: formData.get("dueDate"),
   });
@@ -46,7 +61,7 @@ export async function createProjectAction(
     };
   }
 
-  const { name, clientId, description, status, priority, startDate, dueDate } =
+  const { name, clientId, description, status, priority, progress, startDate, dueDate } =
     parsed.data;
 
   // Never trust a browser-supplied clientId: confirm it's a real ClientProfile.
@@ -61,15 +76,39 @@ export async function createProjectAction(
     };
   }
 
-  let createdId: string;
-  try {
-    const created = await prisma.project.create({
-      data: { name, clientId, description, status, priority, startDate, dueDate },
-      select: { id: true },
-    });
-    createdId = created.id;
-  } catch (err) {
-    console.error("[admin/projects] create failed:", err);
+  const completedAt = status === ProjectStatus.COMPLETED ? new Date() : null;
+
+  let createdId: string | undefined;
+  for (let attempt = 0; attempt < 3 && !createdId; attempt++) {
+    const projectCode = await generateProjectCode();
+    try {
+      const created = await prisma.project.create({
+        data: {
+          name,
+          clientId,
+          description,
+          status,
+          priority,
+          progress,
+          startDate,
+          dueDate,
+          completedAt,
+          projectCode,
+          createdById: admin.id,
+        },
+        select: { id: true },
+      });
+      createdId = created.id;
+    } catch (err) {
+      if (isProjectCodeConflict(err) && attempt < 2) {
+        continue;
+      }
+      console.error("[admin/projects] create failed:", err);
+      return { error: "Failed to create project. Please try again." };
+    }
+  }
+
+  if (!createdId) {
     return { error: "Failed to create project. Please try again." };
   }
 
@@ -98,6 +137,7 @@ export async function updateProjectAction(
     description: formData.get("description"),
     status: formData.get("status"),
     priority: formData.get("priority"),
+    progress: formData.get("progress"),
     startDate: formData.get("startDate"),
     dueDate: formData.get("dueDate"),
   });
@@ -111,13 +151,19 @@ export async function updateProjectAction(
 
   const existing = await prisma.project.findUnique({
     where: { id: projectId },
-    select: { id: true, clientId: true, _count: { select: { tickets: true } } },
+    select: {
+      id: true,
+      clientId: true,
+      status: true,
+      completedAt: true,
+      _count: { select: { tickets: true } },
+    },
   });
   if (!existing) {
     return { error: "Project not found." };
   }
 
-  const { name, clientId, description, status, priority, startDate, dueDate } =
+  const { name, clientId, description, status, priority, progress, startDate, dueDate } =
     parsed.data;
 
   // Reassigning the client would strand any existing Tickets on this project
@@ -147,10 +193,18 @@ export async function updateProjectAction(
     };
   }
 
+  // Auto-track completion time from the status transition rather than a
+  // separate form field: entering COMPLETED stamps it (unless already set,
+  // e.g. re-saving without changing status), leaving COMPLETED clears it.
+  const completedAt =
+    status === ProjectStatus.COMPLETED
+      ? (existing.completedAt ?? new Date())
+      : null;
+
   try {
     await prisma.project.update({
       where: { id: projectId },
-      data: { name, clientId, description, status, priority, startDate, dueDate },
+      data: { name, clientId, description, status, priority, progress, startDate, dueDate, completedAt },
     });
   } catch (err) {
     console.error("[admin/projects] update failed:", err);

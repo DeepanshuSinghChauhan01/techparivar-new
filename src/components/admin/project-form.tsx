@@ -20,6 +20,7 @@ type DefaultValues = {
   description: string;
   status: "PLANNING" | "ACTIVE" | "ON_HOLD" | "COMPLETED" | "CANCELLED";
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  progress: number;
   startDate: string;
   dueDate: string;
 };
@@ -31,6 +32,7 @@ export function ProjectForm({
   clients,
   defaultValues,
   projectId,
+  projectCode,
   submitLabel,
   pendingLabel,
   cancelHref,
@@ -39,6 +41,7 @@ export function ProjectForm({
   clients: ClientOption[];
   defaultValues: DefaultValues;
   projectId?: string;
+  projectCode?: string;
   submitLabel: string;
   pendingLabel: string;
   cancelHref: string;
@@ -51,6 +54,15 @@ export function ProjectForm({
         <input type="hidden" name="projectId" value={projectId} />
       )}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {projectCode && (
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Project Code</Label>
+            <p className="font-portal-data text-sm text-on-surface-variant">
+              {projectCode}
+            </p>
+          </div>
+        )}
+
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="name">Project Name</Label>
           <Input
@@ -122,6 +134,25 @@ export function ProjectForm({
             <option value="HIGH">High</option>
             <option value="URGENT">Urgent</option>
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="progress">Progress (%)</Label>
+          <Input
+            id="progress"
+            name="progress"
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            defaultValue={defaultValues.progress}
+            disabled={isPending}
+          />
+          {state.fieldErrors?.progress && (
+            <p className="text-xs text-red-500">
+              {state.fieldErrors.progress[0]}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">

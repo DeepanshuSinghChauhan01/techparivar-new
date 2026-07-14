@@ -100,7 +100,7 @@ export default async function DashboardPage() {
           where: { clientId: clientProfileId },
           orderBy: { updatedAt: "desc" },
           take: 3,
-          select: { id: true, name: true, status: true, priority: true, dueDate: true },
+          select: { id: true, name: true, status: true, priority: true, progress: true, dueDate: true },
         }),
         prisma.ticket.findMany({
           where: {
@@ -265,6 +265,12 @@ export default async function DashboardPage() {
                           ? `Due ${project.dueDate.toLocaleDateString()}`
                           : "No due date"}
                       </span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${project.progress}%` }}
+                      />
                     </div>
                   </Link>
                 ))}

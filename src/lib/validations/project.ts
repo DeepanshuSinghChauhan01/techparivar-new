@@ -9,6 +9,16 @@ const optionalTrimmedString = (max: number) =>
 
 const optionalDate = z.preprocess(emptyToUndefined, z.coerce.date().optional());
 
+const progressField = z.preprocess(
+  emptyToUndefined,
+  z.coerce
+    .number()
+    .int("Progress must be a whole number")
+    .min(0, "Progress must be between 0 and 100")
+    .max(100, "Progress must be between 0 and 100")
+    .default(0)
+);
+
 function refineDates<T extends { startDate?: Date; dueDate?: Date }>(data: T) {
   return !data.startDate || !data.dueDate || data.dueDate >= data.startDate;
 }
@@ -20,6 +30,7 @@ export const createProjectSchema = z
     description: optionalTrimmedString(2000),
     status: z.nativeEnum(ProjectStatus).default(ProjectStatus.PLANNING),
     priority: z.nativeEnum(ProjectPriority).default(ProjectPriority.MEDIUM),
+    progress: progressField,
     startDate: optionalDate,
     dueDate: optionalDate,
   })
@@ -37,6 +48,7 @@ export const updateProjectSchema = z
     description: optionalTrimmedString(2000),
     status: z.nativeEnum(ProjectStatus),
     priority: z.nativeEnum(ProjectPriority),
+    progress: progressField,
     startDate: optionalDate,
     dueDate: optionalDate,
   })

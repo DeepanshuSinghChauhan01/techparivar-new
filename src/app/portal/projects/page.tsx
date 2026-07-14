@@ -41,10 +41,12 @@ export default async function PortalProjectsPage() {
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
+      projectCode: true,
       name: true,
       description: true,
       status: true,
       priority: true,
+      progress: true,
       startDate: true,
       dueDate: true,
       updatedAt: true,
@@ -86,11 +88,26 @@ export default async function PortalProjectsPage() {
                   <h2 className="font-portal-display text-xl font-semibold">
                     {project.name}
                   </h2>
+                  <p className="mt-0.5 font-portal-data text-xs text-on-surface-variant">
+                    {project.projectCode}
+                  </p>
                   {project.description && (
                     <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-on-surface-variant">
                       {project.description}
                     </p>
                   )}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs text-on-surface-variant">
+                    <span>Progress</span>
+                    <span>{project.progress}%</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${project.progress}%` }}
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center justify-between border-t border-border/60 pt-4 text-sm">
                   <span className="text-on-surface-variant">

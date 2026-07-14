@@ -30,6 +30,7 @@ model User {
 
   clientProfile  ClientProfile?
   ticketsCreated Ticket[]       @relation("TicketCreatedBy")
+  filesUploaded  ManagedFile[]  @relation("FileUploadedBy")
 }
 
 model ClientProfile {
@@ -44,9 +45,11 @@ model ClientProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  projects Project[]
-  tickets  Ticket[]
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  tickets     Ticket[]
+  fileFolders FileFolder[]
+  files       ManagedFile[]
 }
 
 enum ProjectStatus {
@@ -80,7 +83,9 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tickets Ticket[]
+  tickets     Ticket[]
+  fileFolders FileFolder[]
+  files       ManagedFile[]
 
   @@index([clientId])
   @@index([status])
@@ -123,6 +128,79 @@ model Ticket {
 
   @@index([clientId])
   @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum FileCategory {
+  DELIVERABLE
+  DOCUMENT
+  ASSET
+  REPORT
+  CONTRACT
+  OTHER
+}
+
+enum FileStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model FileFolder {
+  id   String @id @default(cuid())
+  name String
+
+  clientId String
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  files ManagedFile[]
+
+  @@index([clientId])
+  @@index([projectId])
+}
+
+model ManagedFile {
+  id              String       @id @default(cuid())
+  displayName     String
+  originalName    String
+  storageKey      String       @unique
+  mimeType        String
+  sizeBytes       BigInt
+  category        FileCategory @default(OTHER)
+  status          FileStatus   @default(ACTIVE)
+  visibleToClient Boolean      @default(true)
+  description     String?
+
+  version        Int          @default(1)
+  replacesFileId String?      @unique
+  replacesFile   ManagedFile? @relation("FileVersions", fields: [replacesFileId], references: [id], onDelete: SetNull)
+  newerVersion   ManagedFile? @relation("FileVersions")
+
+  clientId String
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  folderId String?
+  folder   FileFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  uploadedById String
+  uploadedBy   User   @relation("FileUploadedBy", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([projectId])
+  @@index([folderId])
+  @@index([category])
   @@index([status])
   @@index([createdAt])
 }

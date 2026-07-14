@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FolderKanban, LifeBuoy, Zap } from "lucide-react";
+import { LayoutDashboard, Users, FolderKanban, LifeBuoy, Folder, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const adminNav = [
   { label: "Clients", href: "/admin/clients", icon: Users },
   { label: "Projects", href: "/admin/projects", icon: FolderKanban },
   { label: "Tickets", href: "/admin/tickets", icon: LifeBuoy },
+  { label: "Files", href: "/admin/files", icon: Folder },
 ];
 
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {

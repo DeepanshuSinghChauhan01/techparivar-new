@@ -12,6 +12,8 @@ import {
   FolderKanban,
   Rocket,
   LifeBuoy,
+  Folder,
+  Download,
 } from "lucide-react";
 
 import { Button } from "@/components/portal-ui/button";
@@ -71,41 +73,58 @@ export default async function DashboardPage() {
   const firstName = user.name?.split(" ")[0] || "there";
   const clientProfileId = await getMyClientProfileId(user);
 
-  const [totalProjects, activeProjects, openTicketsCount, recentProjects, openTickets] =
-    clientProfileId
-      ? await Promise.all([
-          prisma.project.count({ where: { clientId: clientProfileId } }),
-          prisma.project.count({
-            where: { clientId: clientProfileId, status: "ACTIVE" },
-          }),
-          prisma.ticket.count({
-            where: {
-              clientId: clientProfileId,
-              status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
-            },
-          }),
-          prisma.project.findMany({
-            where: { clientId: clientProfileId },
-            orderBy: { updatedAt: "desc" },
-            take: 3,
-            select: { id: true, name: true, status: true, priority: true, dueDate: true },
-          }),
-          prisma.ticket.findMany({
-            where: {
-              clientId: clientProfileId,
-              status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
-            },
-            orderBy: { updatedAt: "desc" },
-            take: 3,
-            select: { id: true, subject: true, priority: true, updatedAt: true },
-          }),
-        ])
-      : [0, 0, 0, [], []];
+  const [
+    totalProjects,
+    activeProjects,
+    openTicketsCount,
+    availableFilesCount,
+    recentProjects,
+    openTickets,
+    recentFiles,
+  ] = clientProfileId
+    ? await Promise.all([
+        prisma.project.count({ where: { clientId: clientProfileId } }),
+        prisma.project.count({
+          where: { clientId: clientProfileId, status: "ACTIVE" },
+        }),
+        prisma.ticket.count({
+          where: {
+            clientId: clientProfileId,
+            status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
+          },
+        }),
+        prisma.managedFile.count({
+          where: { clientId: clientProfileId, visibleToClient: true, status: "ACTIVE" },
+        }),
+        prisma.project.findMany({
+          where: { clientId: clientProfileId },
+          orderBy: { updatedAt: "desc" },
+          take: 3,
+          select: { id: true, name: true, status: true, priority: true, dueDate: true },
+        }),
+        prisma.ticket.findMany({
+          where: {
+            clientId: clientProfileId,
+            status: { in: ["OPEN", "IN_PROGRESS", "WAITING_FOR_CLIENT"] },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 3,
+          select: { id: true, subject: true, priority: true, updatedAt: true },
+        }),
+        prisma.managedFile.findMany({
+          where: { clientId: clientProfileId, visibleToClient: true, status: "ACTIVE" },
+          orderBy: { createdAt: "desc" },
+          take: 3,
+          select: { id: true, displayName: true, createdAt: true },
+        }),
+      ])
+    : [0, 0, 0, 0, [], [], []];
 
   const workStats = [
     { label: "Total Projects", value: totalProjects, icon: FolderKanban },
     { label: "Active Projects", value: activeProjects, icon: Rocket },
     { label: "Open Tickets", value: openTicketsCount, icon: LifeBuoy },
+    { label: "Available Files", value: availableFilesCount, icon: Folder },
   ];
 
   return (
@@ -183,8 +202,8 @@ export default async function DashboardPage() {
             })}
           </div>
 
-          {/* Project / ticket stats */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Project / ticket / file stats */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {workStats.map((stat) => {
               const Icon = stat.icon;
               return (
@@ -332,6 +351,42 @@ export default async function DashboardPage() {
               className="text-center text-sm font-semibold text-primary"
             >
               View All Support Tickets
+            </Link>
+          </Card>
+
+          {/* Recent deliverables */}
+          <Card className="gap-4 p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-portal-display text-base font-semibold">
+                Recent Deliverables
+              </h2>
+              <Folder className="size-4 text-on-surface-variant" />
+            </div>
+            {recentFiles.length === 0 ? (
+              <p className="py-4 text-center text-xs text-on-surface-variant">
+                No files shared with you yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {recentFiles.map((file) => (
+                  <a
+                    key={file.id}
+                    href={`/api/files/${file.id}/download`}
+                    className="flex items-center justify-between rounded-lg border border-border/60 bg-surface-container-low p-3 transition-colors hover:border-primary/50"
+                  >
+                    <span className="min-w-0 truncate text-sm font-medium">
+                      {file.displayName}
+                    </span>
+                    <Download className="size-4 shrink-0 text-on-surface-variant" />
+                  </a>
+                ))}
+              </div>
+            )}
+            <Link
+              href="/portal/files"
+              className="text-center text-sm font-semibold text-primary"
+            >
+              View All Files
             </Link>
           </Card>
 

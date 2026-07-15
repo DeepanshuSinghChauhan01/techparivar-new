@@ -140,6 +140,7 @@ export async function updateProjectAction(
     progress: formData.get("progress"),
     startDate: formData.get("startDate"),
     dueDate: formData.get("dueDate"),
+    engagementId: formData.get("engagementId"),
   });
 
   if (!parsed.success) {
@@ -163,7 +164,7 @@ export async function updateProjectAction(
     return { error: "Project not found." };
   }
 
-  const { name, clientId, description, status, priority, progress, startDate, dueDate } =
+  const { name, clientId, description, status, priority, progress, startDate, dueDate, engagementId } =
     parsed.data;
 
   // Reassigning the client would strand any existing Tickets on this project
@@ -201,10 +202,45 @@ export async function updateProjectAction(
       ? (existing.completedAt ?? new Date())
       : null;
 
+  // Engagement linking (Module 1): never trust the browser-rendered option
+  // list — independently verify the engagement exists and belongs to the
+  // SAME client this project is being saved under, using the just-resolved
+  // clientId (not the prior one), since both could change in one request.
+  // An empty engagementId unlinks unconditionally, no lookup needed.
+  if (engagementId) {
+    const engagement = await prisma.clientServiceEngagement.findUnique({
+      where: { id: engagementId },
+      select: { id: true, clientId: true },
+    });
+    if (!engagement) {
+      return {
+        error: "Selected engagement does not exist.",
+        fieldErrors: { engagementId: ["Selected engagement does not exist."] },
+      };
+    }
+    if (engagement.clientId !== clientId) {
+      return {
+        error: "Selected engagement does not belong to this project's client.",
+        fieldErrors: { engagementId: ["Selected engagement does not belong to this project's client."] },
+      };
+    }
+  }
+
   try {
     await prisma.project.update({
       where: { id: projectId },
-      data: { name, clientId, description, status, priority, progress, startDate, dueDate, completedAt },
+      data: {
+        name,
+        clientId,
+        description,
+        status,
+        priority,
+        progress,
+        startDate,
+        dueDate,
+        completedAt,
+        engagementId: engagementId ?? null,
+      },
     });
   } catch (err) {
     console.error("[admin/projects] update failed:", err);

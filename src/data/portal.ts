@@ -68,6 +68,7 @@ export const storeSpotlight = {
 export const portalNav = [
   { label: "Dashboard", href: "/portal/dashboard", icon: "LayoutDashboard" },
   { label: "Projects", href: "/portal/projects", icon: "FolderKanban" },
+  { label: "Services", href: "/portal/services", icon: "Handshake" },
   { label: "Support", href: "/portal/support", icon: "LifeBuoy" },
   { label: "Meetings", href: "/portal/meetings", icon: "CalendarClock" },
   { label: "Files", href: "/portal/files", icon: "Folder" },

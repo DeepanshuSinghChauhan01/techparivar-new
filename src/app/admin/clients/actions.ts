@@ -177,13 +177,26 @@ export async function deleteClientAction(
 
   const target = await prisma.user.findUnique({
     where: { id: clientId },
-    select: { id: true, role: true },
+    select: {
+      id: true,
+      role: true,
+      clientProfile: {
+        select: { _count: { select: { engagements: true } } },
+      },
+    },
   });
   if (!target) {
     return { error: "Client not found." };
   }
   if (target.role !== "CLIENT") {
     return { error: "Only client accounts can be deleted here." };
+  }
+
+  if (target.clientProfile && target.clientProfile._count.engagements > 0) {
+    return {
+      error:
+        "This client has service engagements on record and cannot be deleted. Set their status to Inactive instead to preserve their history, or cancel/remove their engagements first.",
+    };
   }
 
   try {

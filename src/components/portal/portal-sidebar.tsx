@@ -16,6 +16,7 @@ import {
   Bell,
   Settings,
   Zap,
+  Handshake,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ const iconMap: Record<string, LucideIcon> = {
   Users,
   CalendarClock,
   BookOpen,
+  Handshake,
 };
 
 export function PortalSidebar({ onNavigate }: { onNavigate?: () => void }) {

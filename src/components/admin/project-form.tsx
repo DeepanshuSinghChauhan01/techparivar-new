@@ -13,6 +13,13 @@ const selectClass =
   "h-11 w-full rounded-lg border border-border bg-surface-container-low px-4 text-sm text-foreground outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50";
 
 type ClientOption = { id: string; companyName: string; userName: string };
+type EngagementOption = {
+  id: string;
+  name: string;
+  status: string;
+  serviceName: string;
+  planName: string | null;
+};
 
 type DefaultValues = {
   name: string;
@@ -23,6 +30,7 @@ type DefaultValues = {
   progress: number;
   startDate: string;
   dueDate: string;
+  engagementId?: string;
 };
 
 const initialState: ActionState = {};
@@ -33,6 +41,7 @@ export function ProjectForm({
   defaultValues,
   projectId,
   projectCode,
+  engagementOptions,
   submitLabel,
   pendingLabel,
   cancelHref,
@@ -42,6 +51,7 @@ export function ProjectForm({
   defaultValues: DefaultValues;
   projectId?: string;
   projectCode?: string;
+  engagementOptions?: EngagementOption[];
   submitLabel: string;
   pendingLabel: string;
   cancelHref: string;
@@ -60,6 +70,32 @@ export function ProjectForm({
             <p className="font-portal-data text-sm text-on-surface-variant">
               {projectCode}
             </p>
+          </div>
+        )}
+
+        {engagementOptions && (
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="engagementId">
+              Engagement <span className="text-on-surface-variant">(optional — link this project to a purchased service)</span>
+            </Label>
+            <select
+              id="engagementId"
+              name="engagementId"
+              defaultValue={defaultValues.engagementId ?? ""}
+              disabled={isPending}
+              className={selectClass}
+            >
+              <option value="">No Engagement</option>
+              {engagementOptions.map((engagement) => (
+                <option key={engagement.id} value={engagement.id}>
+                  {engagement.serviceName} — {engagement.name} ({engagement.status}
+                  {engagement.planName ? `, ${engagement.planName}` : ""})
+                </option>
+              ))}
+            </select>
+            {state.fieldErrors?.engagementId && (
+              <p className="text-xs text-red-500">{state.fieldErrors.engagementId[0]}</p>
+            )}
           </div>
         )}
 

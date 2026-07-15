@@ -1,19 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 
 import { Card } from "@/components/portal-ui/card";
 import { Button } from "@/components/portal-ui/button";
 import { Badge } from "@/components/portal-ui/badge";
 import { prisma } from "@/lib/prisma";
 import { DeleteClientButton } from "@/components/admin/delete-client-button";
+import { formatMoney } from "@/lib/format";
 
 const statusVariant = {
   ACTIVE: "success",
   INACTIVE: "secondary",
   SUSPENDED: "destructive",
 } as const;
+
+const engagementStatusVariant = {
+  PENDING: "secondary",
+  ACTIVE: "success",
+  PAUSED: "warning",
+  CANCELLED: "destructive",
+  EXPIRED: "secondary",
+} as const;
+
+function titleCase(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(" ");
+}
 
 async function getClient(clientId: string) {
   const client = await prisma.user.findUnique({
@@ -58,6 +74,21 @@ export default async function ClientDetailPage({
 
   const profile = client.clientProfile;
   const lastUpdated = profile?.updatedAt ?? client.updatedAt;
+
+  const engagements = profile
+    ? await prisma.clientServiceEngagement.findMany({
+        where: { clientId: profile.id },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          price: true,
+          currency: true,
+          service: { select: { name: true } },
+        },
+      })
+    : [];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -141,6 +172,44 @@ export default async function ClientDetailPage({
           </div>
         )}
       </Card>
+
+      {profile && (
+        <Card className="gap-4 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-portal-display text-lg font-semibold">Service Engagements</h2>
+            <Button variant="secondary" size="sm" asChild>
+              <Link href={`/admin/engagements/new?clientId=${profile.id}`}>
+                <Plus className="size-4" /> New Engagement
+              </Link>
+            </Button>
+          </div>
+          {engagements.length === 0 ? (
+            <p className="py-6 text-center text-sm text-on-surface-variant">
+              No service engagements yet.
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {engagements.map((engagement) => (
+                <Link
+                  key={engagement.id}
+                  href={`/admin/engagements/${engagement.id}`}
+                  className="flex items-center justify-between rounded-lg p-3 -mx-3 transition-colors hover:bg-white/5"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{engagement.name}</p>
+                    <p className="text-xs text-on-surface-variant">
+                      {engagement.service.name} • {formatMoney(engagement.price, engagement.currency)}
+                    </p>
+                  </div>
+                  <Badge variant={engagementStatusVariant[engagement.status]}>
+                    {titleCase(engagement.status)}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

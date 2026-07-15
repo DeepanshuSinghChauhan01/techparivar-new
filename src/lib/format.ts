@@ -1,3 +1,16 @@
+export function formatMoney(amount: unknown, currency: string): string {
+  const value = typeof amount === "number" ? amount : Number(amount);
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    return `${value.toFixed(2)} ${currency}`;
+  }
+}
+
 export function formatBytes(bytes: bigint | number): string {
   const n = typeof bytes === "bigint" ? Number(bytes) : bytes;
   if (n <= 0) return "0 B";

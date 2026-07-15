@@ -25,6 +25,7 @@ async function getProject(projectId: string) {
       priority: true,
       progress: true,
       clientId: true,
+      engagementId: true,
       startDate: true,
       dueDate: true,
     },
@@ -47,6 +48,22 @@ export default async function EditProjectPage({
 
   if (!project) notFound();
 
+  // Only this project's OWN client's engagements are ever offered — this
+  // makes an inconsistent (cross-client) selection impossible through the
+  // UI itself, in addition to the independent server-side check in
+  // updateProjectAction.
+  const engagements = await prisma.clientServiceEngagement.findMany({
+    where: { clientId: project.clientId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      service: { select: { name: true } },
+      plan: { select: { name: true } },
+    },
+  });
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -66,6 +83,13 @@ export default async function EditProjectPage({
             companyName: c.companyName,
             userName: c.user.name,
           }))}
+          engagementOptions={engagements.map((e) => ({
+            id: e.id,
+            name: e.name,
+            status: e.status,
+            serviceName: e.service.name,
+            planName: e.plan?.name ?? null,
+          }))}
           defaultValues={{
             name: project.name,
             clientId: project.clientId,
@@ -75,6 +99,7 @@ export default async function EditProjectPage({
             progress: project.progress,
             startDate: toDateInputValue(project.startDate),
             dueDate: toDateInputValue(project.dueDate),
+            engagementId: project.engagementId ?? "",
           }}
           submitLabel="Save Changes"
           pendingLabel="Saving..."

@@ -9,6 +9,8 @@ const optionalTrimmedString = (max: number) =>
 
 const optionalDate = z.preprocess(emptyToUndefined, z.coerce.date().optional());
 
+const optionalId = z.preprocess(emptyToUndefined, z.string().trim().optional());
+
 const progressField = z.preprocess(
   emptyToUndefined,
   z.coerce
@@ -51,6 +53,7 @@ export const updateProjectSchema = z
     progress: progressField,
     startDate: optionalDate,
     dueDate: optionalDate,
+    engagementId: optionalId,
   })
   .refine(refineDates, {
     message: "Due date cannot be before the start date",

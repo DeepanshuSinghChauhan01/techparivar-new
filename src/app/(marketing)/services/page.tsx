@@ -9,12 +9,16 @@ import { Process } from "@/components/sections/process";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { services } from "@/content/services";
 import { siteConfig } from "@/lib/site-config";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "Shopify store development, Shopify Plus, theme customization, custom apps, migration, CRO, performance optimization, headless commerce, and retainer support.";
 
 export const metadata: Metadata = {
   title: "Shopify Development Services",
-  description:
-    "Shopify store development, Shopify Plus, theme customization, custom apps, migration, CRO, performance optimization, headless commerce, and retainer support.",
+  description,
   alternates: { canonical: "/services" },
+  ...withSocialMetadata({ title: "Shopify Development Services", description, path: "/services" }),
 };
 
 export default function ServicesPage() {

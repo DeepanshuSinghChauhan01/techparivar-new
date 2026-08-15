@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { siteConfig } from "@/lib/site-config";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "TechParivar's terms of service — the terms governing use of this website and Shopify development engagements, including deliverable ownership and payment terms.";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
+  description,
   alternates: { canonical: "/terms" },
   robots: { index: true, follow: true },
+  ...withSocialMetadata({ title: "Terms of Service", description, path: "/terms" }),
 };
 
 export default function TermsPage() {
@@ -39,7 +45,7 @@ export default function TermsPage() {
             </p>
             <p>
               For questions about these terms, contact{" "}
-              <a href={`mailto:${siteConfig.email}`} className="text-accent-blue">
+              <a href={`mailto:${siteConfig.email}`} className="text-accent-blue underline underline-offset-2">
                 {siteConfig.email}
               </a>
               .

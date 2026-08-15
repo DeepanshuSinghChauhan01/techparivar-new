@@ -5,12 +5,16 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { caseStudies } from "@/content/case-studies";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "Shopify and Shopify Plus stores designed and built by TechParivar for D2C brands across fashion, beauty, jewelry, electronics, home decor, and wellness.";
 
 export const metadata: Metadata = {
   title: "Portfolio",
-  description:
-    "Shopify and Shopify Plus stores designed and built by TechParivar for D2C brands across fashion, beauty, jewelry, electronics, home decor, and wellness.",
+  description,
   alternates: { canonical: "/portfolio" },
+  ...withSocialMetadata({ title: "Portfolio", description, path: "/portfolio" }),
 };
 
 export default function PortfolioPage() {
@@ -39,9 +43,9 @@ export default function PortfolioPage() {
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-display text-lg font-semibold text-text-primary">
+                    <h2 className="font-display text-lg font-semibold text-text-primary">
                       {cs.client}
-                    </h3>
+                    </h2>
                     <span className="font-mono-tabular text-sm font-semibold text-accent-teal">
                       {cs.heroStat.value}
                     </span>
@@ -54,6 +58,12 @@ export default function PortfolioPage() {
               </Link>
             ))}
           </div>
+          <p className="mt-8 text-center text-sm text-text-secondary">
+            Want the full story behind the numbers?{" "}
+            <Link href="/case-studies" className="text-accent-blue underline underline-offset-2">
+              Read the detailed case studies →
+            </Link>
+          </p>
         </Container>
       </section>
 

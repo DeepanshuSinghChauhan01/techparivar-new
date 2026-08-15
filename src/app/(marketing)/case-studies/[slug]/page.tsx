@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { caseStudies, getCaseStudyBySlug } from "@/content/case-studies";
 import { siteConfig } from "@/lib/site-config";
+import { absoluteUrl, notFoundMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return caseStudies.map((c) => ({ slug: c.slug }));
@@ -19,12 +20,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const cs = getCaseStudyBySlug(slug);
-  if (!cs) return {};
+  if (!cs) return notFoundMetadata("Case Study");
 
+  const title = `${cs.client} Case Study`;
   return {
-    title: `${cs.client} Case Study`,
+    title,
     description: cs.challenge,
     alternates: { canonical: `/case-studies/${cs.slug}` },
+    openGraph: {
+      type: "article",
+      url: absoluteUrl(`/case-studies/${cs.slug}`),
+      title: `${title} — ${siteConfig.name}`,
+      description: cs.challenge,
+      siteName: siteConfig.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} — ${siteConfig.name}`,
+      description: cs.challenge,
+    },
   };
 }
 
@@ -45,9 +59,20 @@ export default async function CaseStudyDetailPage({
     publisher: { "@type": "Organization", name: siteConfig.name },
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
+      { "@type": "ListItem", position: 2, name: "Case Studies", item: absoluteUrl("/case-studies") },
+      { "@type": "ListItem", position: 3, name: cs.client, item: absoluteUrl(`/case-studies/${cs.slug}`) },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <PageHero
         eyebrow={`${cs.industry} · ${cs.country}`}

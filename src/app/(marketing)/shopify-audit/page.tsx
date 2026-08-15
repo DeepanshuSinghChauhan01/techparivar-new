@@ -5,12 +5,17 @@ import { Eyebrow } from "@/components/ui/section-heading";
 import { MultiStepContactForm } from "@/components/sections/multi-step-contact-form";
 import { Testimonials } from "@/components/sections/testimonials";
 import { FAQ } from "@/components/sections/faq";
+import { withSocialMetadata } from "@/lib/seo";
+
+const title = "Free Shopify Audit — Find What's Costing You Conversions";
+const description =
+  "Get a free, no-obligation Shopify store audit covering Core Web Vitals, conversion funnel, theme code, and SEO health — delivered with prioritized fixes.";
 
 export const metadata: Metadata = {
-  title: "Free Shopify Audit — Find What's Costing You Conversions",
-  description:
-    "Get a free, no-obligation Shopify store audit covering Core Web Vitals, conversion funnel, theme code, and SEO health — delivered with prioritized fixes.",
+  title,
+  description,
   alternates: { canonical: "/shopify-audit" },
+  ...withSocialMetadata({ title, description, path: "/shopify-audit" }),
 };
 
 const auditAreas = [

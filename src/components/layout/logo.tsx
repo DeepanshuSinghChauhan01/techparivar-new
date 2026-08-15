@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -10,9 +11,12 @@ export function Logo({ className }: { className?: string }) {
       <span className="relative flex size-8 items-center justify-center rounded-lg bg-accent-blue">
         <span className="absolute inset-0 rounded-lg bg-accent-blue blur-[6px] opacity-50 transition-opacity group-hover:opacity-80" />
         <span className="relative font-display text-[15px] font-bold text-[#06090f]">
-          <img
+          <Image
             src="/techparivarlogo.png"
             alt="TechParivar Logo"
+            width={40}
+            height={40}
+            priority
             className="h-10 w-auto"
           />
         </span>

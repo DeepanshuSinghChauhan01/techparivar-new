@@ -5,12 +5,16 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { caseStudies } from "@/content/case-studies";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "Detailed Shopify and Shopify Plus case studies covering client challenges, solutions, and measured revenue and performance impact.";
 
 export const metadata: Metadata = {
   title: "Case Studies",
-  description:
-    "Detailed Shopify and Shopify Plus case studies covering client challenges, solutions, and measured revenue and performance impact.",
+  description,
   alternates: { canonical: "/case-studies" },
+  ...withSocialMetadata({ title: "Case Studies", description, path: "/case-studies" }),
 };
 
 export default function CaseStudiesPage() {
@@ -71,6 +75,12 @@ export default function CaseStudiesPage() {
               </Link>
             ))}
           </div>
+          <p className="mt-8 text-center text-sm text-text-secondary">
+            Prefer a quick visual browse instead?{" "}
+            <Link href="/portfolio" className="text-accent-blue underline underline-offset-2">
+              See the portfolio gallery →
+            </Link>
+          </p>
         </Container>
       </section>
 

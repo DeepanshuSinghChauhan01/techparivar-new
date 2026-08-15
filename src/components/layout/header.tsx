@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X, ArrowUpRight, LayoutDashboard } from "lucide-react";
 import { Logo } from "./logo";
 import { Container } from "@/components/ui/container";
@@ -13,6 +14,10 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -24,6 +29,47 @@ export function Header() {
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
   }, [mobileOpen]);
+
+  // Escape closes the menu (returning focus to the toggle button), and Tab is
+  // trapped within the menu so keyboard focus can't land on hero/page content
+  // hidden behind the full-screen overlay.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        mobileToggleRef.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab" || !mobileMenuRef.current) return;
+
+      const focusable = Array.from(
+        mobileMenuRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")
+      ).filter((el) => el.offsetParent !== null);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
+
+  // Close the mobile menu on route change (e.g. browser back/forward) — adjusted
+  // during render rather than in an effect, per React's guidance for resetting
+  // state in response to a prop/value change.
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
 
   return (
     <header
@@ -104,10 +150,12 @@ export function Header() {
           </div>
 
           <button
+            ref={mobileToggleRef}
             className="flex items-center justify-center rounded-lg p-2 text-text-primary lg:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-menu"
           >
             {mobileOpen ? <X className="size-6" /> : <Menu className="size-6" />}
           </button>
@@ -115,7 +163,14 @@ export function Header() {
       </Container>
 
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-14 z-30 h-[calc(100vh-3.5rem)] overflow-y-auto bg-base lg:hidden">
+        <div
+          ref={mobileMenuRef}
+          id="mobile-nav-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+          className="fixed inset-x-0 top-14 z-30 h-[calc(100vh-3.5rem)] overflow-y-auto bg-base lg:hidden"
+        >
           <Container className="flex flex-col gap-1 py-6">
             {navLinks.map((link) => (
               <div key={link.href} className="border-b border-border-subtle py-3">

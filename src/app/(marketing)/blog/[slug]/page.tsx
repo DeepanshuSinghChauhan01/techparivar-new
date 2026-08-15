@@ -5,11 +5,25 @@ import { Clock, ArrowLeft } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { blogPosts, getBlogPostBySlug } from "@/content/blog";
+import { getServiceBySlug } from "@/content/services";
 import { siteConfig } from "@/lib/site-config";
+import { absoluteUrl, notFoundMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return blogPosts.map((p) => ({ slug: p.slug }));
 }
+
+// Maps each post to the service page(s) most relevant to its topic, so
+// readers researching a specific problem can get straight to the related
+// service instead of the post being a dead end.
+const relatedServiceSlugs: Record<string, string[]> = {
+  "shopify-plus-vs-shopify-when-to-upgrade": ["shopify-plus"],
+  "core-web-vitals-shopify-2026-guide": ["performance"],
+  "magento-to-shopify-migration-checklist": ["migration"],
+  "cro-checklist-shopify-pdp": ["cro"],
+  "b2b-on-shopify-wholesale-guide": ["shopify-plus"],
+  "headless-shopify-when-it-makes-sense": ["headless-commerce"],
+};
 
 export async function generateMetadata({
   params,
@@ -18,7 +32,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = getBlogPostBySlug(slug);
-  if (!post) return {};
+  if (!post) return notFoundMetadata("Blog Post");
 
   return {
     title: post.title,
@@ -26,9 +40,16 @@ export async function generateMetadata({
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       type: "article",
+      url: absoluteUrl(`/blog/${post.slug}`),
       title: post.title,
       description: post.excerpt,
       publishedTime: post.publishedAt,
+      siteName: siteConfig.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
     },
   };
 }
@@ -42,6 +63,10 @@ export default async function BlogPostPage({
   const post = getBlogPostBySlug(slug);
   if (!post) notFound();
 
+  const relatedServices = (relatedServiceSlugs[post.slug] ?? [])
+    .map((s) => getServiceBySlug(s))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -52,9 +77,20 @@ export default async function BlogPostPage({
     publisher: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
+      { "@type": "ListItem", position: 2, name: "Blog", item: absoluteUrl("/blog") },
+      { "@type": "ListItem", position: 3, name: post.title, item: absoluteUrl(`/blog/${post.slug}`) },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <section className="border-b border-border-subtle bg-base py-16 lg:py-20">
         <Container className="max-w-3xl">
@@ -97,6 +133,27 @@ export default async function BlogPostPage({
               </p>
             ))}
           </div>
+
+          {relatedServices.length > 0 && (
+            <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-6 text-sm text-text-secondary">
+              <span>Related:</span>
+              {relatedServices.map((service) => (
+                <Link
+                  key={service.slug}
+                  href={`/services/${service.slug}`}
+                  className="rounded-full border border-border-default px-3 py-1.5 text-accent-blue transition-colors hover:border-accent-blue/60"
+                >
+                  {service.name}
+                </Link>
+              ))}
+              <Link
+                href="/case-studies"
+                className="rounded-full border border-border-default px-3 py-1.5 text-accent-blue transition-colors hover:border-accent-blue/60"
+              >
+                See client results
+              </Link>
+            </div>
+          )}
         </Container>
       </section>
 

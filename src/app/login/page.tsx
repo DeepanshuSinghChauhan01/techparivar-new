@@ -5,8 +5,9 @@ import { getCurrentUser } from "@/lib/auth-helpers";
 import LoginView from "./login-view";
 
 export const metadata: Metadata = {
-  title: "Client Login | TechParivar",
-  description: "Enter the TechParivar Client Portal ecosystem.",
+  title: "Client Login",
+  description: "Sign in to the TechParivar Client Portal to view projects, files, and support tickets.",
+  robots: { index: false, follow: false },
 };
 
 export default async function LoginPage() {

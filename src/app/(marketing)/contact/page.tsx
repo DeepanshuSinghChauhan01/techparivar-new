@@ -4,12 +4,16 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { MultiStepContactForm } from "@/components/sections/multi-step-contact-form";
 import { siteConfig } from "@/lib/site-config";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "Get in touch with TechParivar for Shopify and Shopify Plus development. Book a free consultation or send us your project details.";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description:
-    "Get in touch with TechParivar for Shopify and Shopify Plus development. Book a free consultation or send us your project details.",
+  description,
   alternates: { canonical: "/contact" },
+  ...withSocialMetadata({ title: "Contact", description, path: "/contact" }),
 };
 
 export default function ContactPage() {

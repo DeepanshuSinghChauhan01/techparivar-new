@@ -14,8 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog",
     "/contact",
     "/shopify-audit",
-    "/shopify-plus-services",
-    "/shopify-app-development",
+    "/privacy-policy",
+    "/terms",
   ].map((route) => ({
     url: `${siteConfig.url}${route}`,
     lastModified: new Date(),

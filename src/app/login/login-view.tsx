@@ -9,6 +9,7 @@ import { Button } from "@/components/portal-ui/button";
 import { Input } from "@/components/portal-ui/input";
 import { Label } from "@/components/portal-ui/label";
 import { Card } from "@/components/portal-ui/card";
+import { siteConfig } from "@/lib/site-config";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -107,9 +108,12 @@ export default function LoginPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label htmlFor="password">Password</Label>
-                                        <Link href="#" className="text-xs font-semibold text-primary">
+                                        <span
+                                            className="text-xs font-semibold text-on-surface-variant/70 cursor-not-allowed"
+                                            title="Password reset isn't available yet — contact support for help signing in"
+                                        >
                                             Forgot?
-                                        </Link>
+                                        </span>
                                     </div>
                                     <div className="relative">
                                         <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
@@ -143,21 +147,21 @@ export default function LoginPage() {
 
                             <div className="space-y-3 border-t border-border/60 pt-5 text-center">
                                 <p className="text-xs text-on-surface-variant">Tired of passwords?</p>
-                                <Link
-                                    href="#"
-                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                                <span
+                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-on-surface-variant/70 cursor-not-allowed"
+                                    title="Magic link sign-in isn't available yet"
                                 >
                                     <Sparkles className="size-4" />
-                                    Send a Magic Link
-                                </Link>
+                                    Magic Link (coming soon)
+                                </span>
                             </div>
                         </form>
                     </Card>
 
                     <div className="mt-6 flex items-center gap-5 text-xs text-on-surface-variant">
-                        <Link href="#" className="hover:text-foreground">Privacy</Link>
-                        <Link href="#" className="hover:text-foreground">Terms</Link>
-                        <Link href="#" className="hover:text-foreground">Support</Link>
+                        <Link href="/privacy-policy" className="hover:text-foreground">Privacy</Link>
+                        <Link href="/terms" className="hover:text-foreground">Terms</Link>
+                        <a href={`mailto:${siteConfig.email}`} className="hover:text-foreground">Support</a>
                         <span className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full bg-mint-green" />
                             System Operational
@@ -205,9 +209,9 @@ export default function LoginPage() {
                         <p className="font-portal-data text-[10px] font-semibold uppercase tracking-wider text-primary">
                             Latest Updates
                         </p>
-                        <h3 className="mt-2 font-portal-display text-lg font-semibold">
+                        <h2 className="mt-2 font-portal-display text-lg font-semibold">
                             New Security Layer
-                        </h3>
+                        </h2>
                         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
                             We&apos;ve upgraded all client portals with hardware-level
                             encryption and biometric-ready MFA. Secure by design.

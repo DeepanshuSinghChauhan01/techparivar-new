@@ -40,7 +40,7 @@ export function Footer() {
 
           <div className="grid grid-cols-2 gap-6 lg:contents">
             <div>
-              <h3 className="font-display text-sm font-semibold text-text-primary">Services</h3>
+              <h2 className="font-display text-sm font-semibold text-text-primary">Services</h2>
               <ul className="mt-4 flex flex-col gap-3">
                 {serviceLinks.slice(0, 6).map((s) => (
                   <li key={s.href}>
@@ -53,7 +53,7 @@ export function Footer() {
             </div>
 
             <div>
-              <h3 className="font-display text-sm font-semibold text-text-primary">Company</h3>
+              <h2 className="font-display text-sm font-semibold text-text-primary">Company</h2>
               <ul className="mt-4 flex flex-col gap-3">
                 {[
                   { label: "About", href: "/about" },
@@ -75,7 +75,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-display text-sm font-semibold text-text-primary">Get in touch</h3>
+            <h2 className="font-display text-sm font-semibold text-text-primary">Get in touch</h2>
             <ul className="mt-4 flex flex-col gap-3 text-sm text-text-secondary">
               <li className="flex items-start gap-2.5">
                 <Mail className="mt-0.5 size-4 shrink-0 text-accent-blue" />

@@ -39,16 +39,12 @@ export function Hero() {
               </Eyebrow>
             </motion.div>
 
-            <motion.h1
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              custom={1}
+            <h1
               className="mt-5 font-display text-[1.75rem] font-semibold leading-[1.12] tracking-tight text-text-primary sm:mt-6 sm:text-[2.25rem] sm:leading-[1.08] lg:text-[3.4rem]"
             >
               Shopify development that&rsquo;s built to{" "}
               <span className="text-gradient-accent">scale revenue</span>, not just ship pages.
-            </motion.h1>
+            </h1>
 
             <motion.p
               initial="hidden"

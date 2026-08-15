@@ -10,6 +10,7 @@ import { CaseStudiesSection } from "@/components/sections/case-studies-section";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { services, getServiceBySlug } from "@/content/services";
 import { siteConfig } from "@/lib/site-config";
+import { absoluteUrl, notFoundMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return services.map((s) => ({ slug: s.slug }));
@@ -22,13 +23,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const service = getServiceBySlug(slug);
-  if (!service) return {};
+  if (!service) return notFoundMetadata("Service");
 
   return {
     title: service.name,
     description: service.description,
     alternates: { canonical: `/services/${service.slug}` },
-    openGraph: { title: `${service.name} — ${siteConfig.name}`, description: service.description },
+    openGraph: {
+      type: "website",
+      url: absoluteUrl(`/services/${service.slug}`),
+      title: `${service.name} — ${siteConfig.name}`,
+      description: service.description,
+      siteName: siteConfig.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${service.name} — ${siteConfig.name}`,
+      description: service.description,
+    },
   };
 }
 
@@ -53,9 +65,20 @@ export default async function ServiceDetailPage({
     offers: { "@type": "Offer", priceCurrency: "USD", price: service.startingAt.replace(/[^0-9.]/g, "") },
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
+      { "@type": "ListItem", position: 2, name: "Services", item: absoluteUrl("/services") },
+      { "@type": "ListItem", position: 3, name: service.name, item: absoluteUrl(`/services/${service.slug}`) },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <PageHero eyebrow={service.shortName} title={service.name} description={service.description}>
         <div className="mt-8 flex flex-wrap items-center gap-4">

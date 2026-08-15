@@ -4,12 +4,16 @@ import { ArrowRight, Clock } from "lucide-react";
 import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { blogPosts } from "@/content/blog";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "Shopify Plus, CRO, performance, and migration insights from the TechParivar engineering and strategy team.";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description:
-    "Shopify Plus, CRO, performance, and migration insights from the TechParivar engineering and strategy team.",
+  description,
   alternates: { canonical: "/blog" },
+  ...withSocialMetadata({ title: "Blog", description, path: "/blog" }),
 };
 
 export default function BlogPage() {

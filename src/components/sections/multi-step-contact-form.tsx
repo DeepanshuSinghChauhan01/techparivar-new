@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { siteConfig } from "@/lib/site-config";
 
 interface FormData {
   projectType: string;
@@ -37,6 +38,7 @@ export function MultiStepContactForm() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const [data, setData] = useState<FormData>({
     projectType: "",
     budget: "",
@@ -60,8 +62,9 @@ export function MultiStepContactForm() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setSubmitError(false);
     try {
-      await fetch("/api/leads", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,14 +80,13 @@ export function MultiStepContactForm() {
           message: data.message || undefined,
         }),
       });
+      if (!res.ok) throw new Error(`Lead submission failed with status ${res.status}`);
+      setSubmitted(true);
     } catch (err) {
       console.error("Lead submission failed:", err);
-      // Submission failures shouldn't block the user from seeing a
-      // confirmation — the lead is also visible in server logs, and a
-      // production setup should add retry/alerting here.
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
-      setSubmitted(true);
     }
   };
 
@@ -94,9 +96,9 @@ export function MultiStepContactForm() {
         <div className="flex size-14 items-center justify-center rounded-full bg-accent-teal/15 text-accent-teal">
           <CheckCircle2 className="size-7" />
         </div>
-        <h3 className="mt-5 font-display text-xl font-semibold text-text-primary">
+        <h2 className="mt-5 font-display text-xl font-semibold text-text-primary">
           Thanks, {data.name.split(" ")[0] || "there"} — we&rsquo;ve got it.
-        </h3>
+        </h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-text-secondary">
           A member of our team will review your project and reply within one business
           day. Want to skip the wait? Book a slot directly on our calendar.
@@ -146,9 +148,9 @@ export function MultiStepContactForm() {
         >
           {step === 0 && (
             <div>
-              <h3 className="font-display text-lg font-semibold text-text-primary">
+              <h2 className="font-display text-lg font-semibold text-text-primary">
                 What do you need help with?
-              </h3>
+              </h2>
               <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {projectTypes.map((type) => (
                   <button
@@ -166,8 +168,9 @@ export function MultiStepContactForm() {
                 ))}
               </div>
               <div className="mt-5">
-                <label className="text-sm text-text-secondary">Current store URL (optional)</label>
+                <label htmlFor="contact-store-url" className="text-sm text-text-secondary">Current store URL (optional)</label>
                 <input
+                  id="contact-store-url"
                   type="text"
                   value={data.storeUrl}
                   onChange={(e) => update("storeUrl", e.target.value)}
@@ -180,9 +183,9 @@ export function MultiStepContactForm() {
 
           {step === 1 && (
             <div>
-              <h3 className="font-display text-lg font-semibold text-text-primary">
+              <h2 className="font-display text-lg font-semibold text-text-primary">
                 Budget range
-              </h3>
+              </h2>
               <div className="mt-5 flex flex-wrap gap-2.5">
                 {budgets.map((b) => (
                   <button
@@ -200,9 +203,9 @@ export function MultiStepContactForm() {
                 ))}
               </div>
 
-              <h3 className="mt-7 font-display text-lg font-semibold text-text-primary">
+              <h2 className="mt-7 font-display text-lg font-semibold text-text-primary">
                 Timeline
-              </h3>
+              </h2>
               <div className="mt-5 flex flex-wrap gap-2.5">
                 {timelines.map((t) => (
                   <button
@@ -224,13 +227,14 @@ export function MultiStepContactForm() {
 
           {step === 2 && (
             <div>
-              <h3 className="font-display text-lg font-semibold text-text-primary">
+              <h2 className="font-display text-lg font-semibold text-text-primary">
                 Your details
-              </h3>
+              </h2>
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-1">
-                  <label className="text-sm text-text-secondary">Full name *</label>
+                  <label htmlFor="contact-name" className="text-sm text-text-secondary">Full name *</label>
                   <input
+                    id="contact-name"
                     type="text"
                     required
                     value={data.name}
@@ -239,8 +243,9 @@ export function MultiStepContactForm() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-text-secondary">Work email *</label>
+                  <label htmlFor="contact-email" className="text-sm text-text-secondary">Work email *</label>
                   <input
+                    id="contact-email"
                     type="email"
                     required
                     value={data.email}
@@ -249,8 +254,9 @@ export function MultiStepContactForm() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-text-secondary">Phone / WhatsApp</label>
+                  <label htmlFor="contact-phone" className="text-sm text-text-secondary">Phone / WhatsApp</label>
                   <input
+                    id="contact-phone"
                     type="tel"
                     value={data.phone}
                     onChange={(e) => update("phone", e.target.value)}
@@ -258,8 +264,9 @@ export function MultiStepContactForm() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-text-secondary">Company / brand</label>
+                  <label htmlFor="contact-company" className="text-sm text-text-secondary">Company / brand</label>
                   <input
+                    id="contact-company"
                     type="text"
                     value={data.company}
                     onChange={(e) => update("company", e.target.value)}
@@ -267,8 +274,9 @@ export function MultiStepContactForm() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-sm text-text-secondary">Anything else we should know?</label>
+                  <label htmlFor="contact-message" className="text-sm text-text-secondary">Anything else we should know?</label>
                   <textarea
+                    id="contact-message"
                     value={data.message}
                     onChange={(e) => update("message", e.target.value)}
                     rows={3}
@@ -280,6 +288,19 @@ export function MultiStepContactForm() {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {submitError && (
+        <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-accent-rose/30 bg-accent-rose/10 px-4 py-3 text-sm text-accent-rose">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <span>
+            Something went wrong sending your request. Please try again, or email us directly at{" "}
+            <a href={`mailto:${siteConfig.email}`} className="underline">
+              {siteConfig.email}
+            </a>
+            .
+          </span>
+        </div>
+      )}
 
       <div className="mt-7 flex items-center justify-between border-t border-border-subtle pt-5">
         {step > 0 ? (

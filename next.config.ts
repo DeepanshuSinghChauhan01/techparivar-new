@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
     // externally (e.g. a CDN or Sanity's image pipeline):
     // remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
   },
+  async redirects() {
+    return [
+      { source: "/shopify-plus-services", destination: "/services/shopify-plus", permanent: true },
+      { source: "/shopify-app-development", destination: "/services/app-development", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

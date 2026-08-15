@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { requireAdmin } from "@/lib/auth-helpers";
+import { noindexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = noindexMetadata;
 
 export default async function AdminLayout({
   children,

@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { siteConfig } from "@/lib/site-config";
+import { withSocialMetadata } from "@/lib/seo";
+
+const description =
+  "TechParivar's privacy policy — what personal information we collect through our contact and audit forms, how we use it, and how to request access, correction, or deletion of your data.";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  description,
   alternates: { canonical: "/privacy-policy" },
   robots: { index: true, follow: true },
+  ...withSocialMetadata({ title: "Privacy Policy", description, path: "/privacy-policy" }),
 };
 
 export default function PrivacyPolicyPage() {
@@ -40,7 +46,7 @@ export default function PrivacyPolicyPage() {
             <p>
               Depending on your jurisdiction, you may have rights to access,
               correct, or delete your personal data. Contact{" "}
-              <a href={`mailto:${siteConfig.email}`} className="text-accent-blue">
+              <a href={`mailto:${siteConfig.email}`} className="text-accent-blue underline underline-offset-2">
                 {siteConfig.email}
               </a>{" "}
               to exercise these rights.

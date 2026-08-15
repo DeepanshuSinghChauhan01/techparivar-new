@@ -48,6 +48,8 @@ export function ContactCTA() {
                   <div className="text-sm font-semibold text-text-primary">Or message us directly</div>
                   <a
                     href={`https://wa.me/${siteConfig.whatsapp.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-xs text-accent-blue hover:underline"
                   >
                     Chat on WhatsApp →

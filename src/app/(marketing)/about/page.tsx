@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button";
 import { TrustStats } from "@/components/sections/trust-stats";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { siteConfig } from "@/lib/site-config";
+import { withSocialMetadata } from "@/lib/seo";
 import { Target, Eye, ShieldCheck } from "lucide-react";
+
+const description =
+  "TechParivar is a Shopify and Shopify Plus development agency built by engineers, for D2C brands across the US, UK, Canada, Australia, UAE, and India.";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description:
-    "TechParivar is a Shopify and Shopify Plus development agency built by engineers, for D2C brands across the US, UK, Canada, Australia, UAE, and India.",
+  description,
   alternates: { canonical: "/about" },
+  ...withSocialMetadata({ title: "About Us", description, path: "/about" }),
 };
 
 const values = [

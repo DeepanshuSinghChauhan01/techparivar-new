@@ -6,10 +6,27 @@ import * as Icons from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { services } from "@/content/services";
+import { getServiceBySlug } from "@/content/services";
 import { cn } from "@/lib/utils";
 
+// A representative slice across Shopify, web, and custom-build offerings —
+// kept intentionally short so the homepage teaser stays a 2x3 preview
+// rather than listing the entire catalog (see /services for the full list
+// and starting prices).
+const HOMEPAGE_PREVIEW_SLUGS = [
+  "shopify-development",
+  "app-development",
+  "custom-shopify-theme",
+  "custom-web-app",
+  "business-website",
+  "ecommerce-website",
+] as const;
+
 export function Services() {
+  const previewServices = HOMEPAGE_PREVIEW_SLUGS.map((slug) => getServiceBySlug(slug)).filter(
+    (s): s is NonNullable<typeof s> => Boolean(s)
+  );
+
   return (
     <section className="section-py border-b border-border-subtle bg-base">
       <Container>
@@ -20,7 +37,7 @@ export function Services() {
         />
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, i) => {
+          {previewServices.map((service, i) => {
             const Icon = (Icons as unknown as Record<string, Icons.LucideIcon>)[service.icon] ?? Icons.Store;
             return (
               <motion.div

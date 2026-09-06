@@ -7,39 +7,59 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Process } from "@/components/sections/process";
 import { ContactCTA } from "@/components/sections/contact-cta";
-import { services } from "@/content/services";
+import { PricingGrid } from "@/components/sections/pricing-grid";
+import { services, PRICING_SERVICE_SLUGS } from "@/content/services";
 import { siteConfig } from "@/lib/site-config";
 import { withSocialMetadata } from "@/lib/seo";
 
 const description =
-  "Shopify store development, Shopify Plus, theme customization, custom apps, migration, CRO, performance optimization, headless commerce, and retainer support.";
+  "Starting prices for landing pages, business websites, e-commerce, Shopify development, custom apps, and ongoing maintenance and SEO — transparent, with a custom quote based on your exact requirements.";
 
 export const metadata: Metadata = {
-  title: "Shopify Development Services",
+  title: "Pricing & Services",
   description,
   alternates: { canonical: "/services" },
-  ...withSocialMetadata({ title: "Shopify Development Services", description, path: "/services" }),
+  ...withSocialMetadata({ title: "Pricing & Services", description, path: "/services" }),
 };
+
+// Larger, custom-scoped engagements not shown in the starting-price grid —
+// still fully real services with their own detail pages, just priced per
+// engagement rather than from a fixed floor.
+const pricingSlugSet: readonly string[] = PRICING_SERVICE_SLUGS;
+const enterpriseServices = services.filter((s) => !pricingSlugSet.includes(s.slug));
 
 export default function ServicesPage() {
   return (
     <>
       <PageHero
-        eyebrow="Services"
-        title="Every Shopify capability your brand needs, under one team"
-        description="From a first store launch to enterprise Shopify Plus architecture — pick a single service or combine several into one accountable engagement."
+        eyebrow="Pricing"
+        title="Transparent Pricing. Powerful Digital Solutions."
+        description="Professional websites, Shopify stores, custom development and ongoing support — built around your business goals."
       >
-        <div className="mt-8">
-          <Button href={siteConfig.calendlyUrl} variant="primary" showArrow>
-            Book Free Consultation
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <Button href="/contact" variant="primary" showArrow>
+            Get a Free Quote
+          </Button>
+          <Button href={siteConfig.calendlyUrl} variant="secondary">
+            Discuss Your Project
           </Button>
         </div>
       </PageHero>
 
+      <PricingGrid />
+
       <section className="section-py border-b border-border-subtle bg-base">
         <Container>
-          <div className="grid grid-cols-1 gap-5">
-            {services.map((service) => {
+          <h2 className="font-display text-2xl font-semibold text-text-primary sm:text-3xl">
+            Enterprise &amp; ongoing engagements
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+            Larger builds and continuous support programs, scoped and priced around your specific
+            requirements.
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 gap-5">
+            {enterpriseServices.map((service) => {
               const Icon =
                 (Icons as unknown as Record<string, Icons.LucideIcon>)[service.icon] ?? Icons.Store;
               return (
@@ -53,9 +73,9 @@ export default function ServicesPage() {
                       <Icon className="size-5" />
                     </div>
                     <div>
-                      <h2 className="font-display text-xl font-semibold text-text-primary">
+                      <h3 className="font-display text-xl font-semibold text-text-primary">
                         {service.name}
-                      </h2>
+                      </h3>
                       <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-text-secondary">
                         {service.summary}
                       </p>

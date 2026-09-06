@@ -38,7 +38,11 @@ export default function LoginPage() {
                 return;
             }
 
-            router.push("/portal/dashboard");
+            // signIn(..., { redirect: false }) only reports success/failure,
+            // not the session — read the role back from the session Auth.js
+            // just issued rather than guessing/hardcoding a destination.
+            const session = await fetch("/api/auth/session").then((res) => res.json());
+            router.push(session?.user?.role === "ADMIN" ? "/admin" : "/portal/dashboard");
             router.refresh();
         } catch {
             setError("Invalid email or password");
@@ -47,8 +51,13 @@ export default function LoginPage() {
         }
     }
 
-    function handleGoogleSignIn() {
-        setError("Google sign-in is not available yet.");
+    async function handleGoogleSignIn() {
+        setError("");
+        // Google's OAuth flow is a full-page redirect, so there's no client-side
+        // moment to branch on role before navigating. Sending it back to /login
+        // lets that page's server-side redirect (role-aware, see page.tsx) do
+        // the actual routing once the session exists.
+        await signIn("google", { callbackUrl: "/login" });
     }
 
     return (
@@ -108,12 +117,9 @@ export default function LoginPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label htmlFor="password">Password</Label>
-                                        <span
-                                            className="text-xs font-semibold text-on-surface-variant/70 cursor-not-allowed"
-                                            title="Password reset isn't available yet — contact support for help signing in"
-                                        >
+                                        <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
                                             Forgot?
-                                        </span>
+                                        </Link>
                                     </div>
                                     <div className="relative">
                                         <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />

@@ -19,20 +19,42 @@ enum ClientStatus {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   name     String
-  email    String @unique
-  password String
-  role     Role   @default(CLIENT)
+  email    String  @unique
+  // Nullable: users created via Google OAuth (see src/auth.ts) have no local
+  // password. Credentials sign-in and password reset both require this to be
+  // set; the authorize()/reset flows are responsible for that check.
+  password String?
+  role     Role    @default(CLIENT)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  clientProfile      ClientProfile?
-  ticketsCreated     Ticket[]                  @relation("TicketCreatedBy")
-  filesUploaded      ManagedFile[]             @relation("FileUploadedBy")
-  projectsCreated    Project[]                 @relation("ProjectCreatedBy")
-  engagementsCreated ClientServiceEngagement[] @relation("EngagementCreatedBy")
+  clientProfile       ClientProfile?
+  ticketsCreated      Ticket[]                  @relation("TicketCreatedBy")
+  filesUploaded       ManagedFile[]             @relation("FileUploadedBy")
+  projectsCreated     Project[]                 @relation("ProjectCreatedBy")
+  engagementsCreated  ClientServiceEngagement[] @relation("EngagementCreatedBy")
+  passwordResetTokens PasswordResetToken[]
+}
+
+// One-time-use password reset tokens. Only a SHA-256 hash of the token is
+// stored — the raw token exists only in the emailed link and is never
+// persisted or logged (see src/lib/auth-actions.ts).
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model ClientProfile {

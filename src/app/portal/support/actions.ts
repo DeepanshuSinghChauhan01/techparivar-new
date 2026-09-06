@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireClientProfileId } from "@/lib/ownership";
 import { createTicketSchema } from "@/lib/validations/ticket";
+import { sendNewTicketEmail } from "@/lib/email";
 
 export type ActionState = {
   error?: string;
@@ -68,6 +69,27 @@ export async function createTicketAction(
   } catch (err) {
     console.error("[portal/support] create ticket failed:", err);
     return { error: "Failed to create ticket. Please try again." };
+  }
+
+  // Ticket already exists at this point — an email failure must never undo
+  // it or block the redirect below.
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (adminEmail) {
+    try {
+      await sendNewTicketEmail({
+        adminEmail,
+        ticketId: createdId,
+        subject,
+        description,
+        priority,
+        clientName: user.name ?? "A client",
+        clientEmail: user.email ?? "unknown",
+      });
+    } catch (err) {
+      console.error("[portal/support] new-ticket admin email failed:", err);
+    }
+  } else {
+    console.warn("[portal/support] ADMIN_NOTIFICATION_EMAIL not set — skipping new-ticket email");
   }
 
   revalidatePath("/portal/support");

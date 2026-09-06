@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { adminUpdateTicketSchema } from "@/lib/validations/ticket";
+import { sendTicketUpdateEmail } from "@/lib/email";
 
 export type ActionState = {
   error?: string;
@@ -46,7 +47,14 @@ export async function adminUpdateTicketAction(
 
   const existing = await prisma.ticket.findUnique({
     where: { id: ticketId },
-    select: { id: true, clientId: true },
+    select: {
+      id: true,
+      clientId: true,
+      subject: true,
+      status: true,
+      priority: true,
+      client: { select: { user: { select: { email: true } } } },
+    },
   });
   if (!existing) {
     return { error: "Ticket not found." };
@@ -79,6 +87,24 @@ export async function adminUpdateTicketAction(
   } catch (err) {
     console.error("[admin/tickets] update failed:", err);
     return { error: "Failed to update ticket. Please try again." };
+  }
+
+  // Ticket is already updated at this point — an email failure must never
+  // undo it. Only notify the client when something they'd actually notice
+  // changed, and never for a no-op resubmit of the same form.
+  const clientEmail = existing.client.user.email;
+  if (clientEmail && (status !== existing.status || priority !== existing.priority)) {
+    try {
+      await sendTicketUpdateEmail({
+        clientEmail,
+        ticketId,
+        subject: existing.subject,
+        status,
+        priority,
+      });
+    } catch (err) {
+      console.error("[admin/tickets] ticket-update client email failed:", err);
+    }
   }
 
   revalidatePath("/admin/tickets");

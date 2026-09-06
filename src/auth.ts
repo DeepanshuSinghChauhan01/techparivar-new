@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
@@ -28,7 +29,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email },
         });
 
-        if (!user) {
+        // No local password (e.g. a Google-only account) — credentials
+        // sign-in must fail closed rather than compare against null.
+        if (!user || !user.password) {
           return null;
         }
 
@@ -49,6 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    Google,
   ],
 
   session: {
@@ -56,11 +60,82 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      // Fresh sign-in: authorize() already validated this user against the DB.
-      if (user) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") {
+        // Credentials: authorize() already validated this user.
+        return true;
+      }
+
+      const email = user.email?.toLowerCase();
+      if (!email) return false;
+
+      // Google only ever asserts email_verified=true for addresses it has
+      // actually confirmed ownership of. Requiring it here is what makes
+      // "sign in with Google using the same email as an existing account"
+      // safe — without it, anyone could claim an unverified address that
+      // happens to match an existing TechParivar user and take over their
+      // account. Reject anything else rather than guess.
+      if (profile?.email_verified !== true) {
+        console.warn(`[auth] rejected Google sign-in for unverified email: ${email}`);
+        return false;
+      }
+
+      const existing = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      });
+      if (existing) {
+        // Existing account (however it was originally created) — link by
+        // email and let them in. Role is never touched here.
+        return true;
+      }
+
+      // Brand-new user via Google. Always CLIENT — never trust an OAuth
+      // profile to grant ADMIN. A ClientProfile is required for the portal
+      // to treat this account as valid (see src/lib/ownership.ts), so one
+      // is created with a placeholder company name the client/admin can
+      // edit later.
+      try {
+        await prisma.user.create({
+          data: {
+            name: user.name ?? email,
+            email,
+            password: null,
+            role: "CLIENT",
+            clientProfile: {
+              create: { companyName: user.name ?? email },
+            },
+          },
+        });
+        return true;
+      } catch (err) {
+        console.error("[auth] failed to create user from Google sign-in:", err);
+        return false;
+      }
+    },
+
+    async jwt({ token, user, account }) {
+      if (user && account?.provider === "credentials") {
+        // Fresh sign-in: authorize() already validated this user against the DB.
         token.id = user.id;
         token.role = user.role;
+        return token;
+      }
+
+      if (user && account?.provider === "google") {
+        // `user.id` here is Google's subject id, not ours, and the OAuth
+        // profile carries no role — look our own record up by email. The
+        // signIn callback above already guarantees it exists at this point.
+        const email = user.email?.toLowerCase();
+        const dbUser = email
+          ? await prisma.user.findUnique({
+              where: { email },
+              select: { id: true, role: true },
+            })
+          : null;
+
+        token.id = dbUser?.id;
+        token.role = dbUser?.role;
         return token;
       }
 

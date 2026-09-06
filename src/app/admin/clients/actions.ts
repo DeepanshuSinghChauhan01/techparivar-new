@@ -8,6 +8,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { createClientSchema, updateClientSchema } from "@/lib/validations/client";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export type ActionState = {
   error?: string;
@@ -86,6 +87,14 @@ export async function createClientAction(
     }
     console.error("[admin/clients] create failed:", err);
     return { error: "Failed to create client. Please try again." };
+  }
+
+  // Client is already created at this point — an email failure must never
+  // undo it or block the redirect below.
+  try {
+    await sendWelcomeEmail({ name, email });
+  } catch (err) {
+    console.error("[admin/clients] welcome email failed:", err);
   }
 
   revalidatePath("/admin/clients");

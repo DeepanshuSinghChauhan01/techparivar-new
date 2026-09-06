@@ -14,7 +14,7 @@ export default async function LoginPage() {
   const user = await getCurrentUser();
 
   if (user) {
-    redirect("/portal/dashboard");
+    redirect(user.role === "ADMIN" ? "/admin" : "/portal/dashboard");
   }
 
   return <LoginView />;

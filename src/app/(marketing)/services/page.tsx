@@ -97,6 +97,29 @@ export default function ServicesPage() {
         </Container>
       </section>
 
+      <section className="border-b border-border-subtle bg-panel py-12 sm:py-16">
+        <Container>
+          <Link
+            href="/ecommerce-services"
+            className="group flex flex-col gap-6 rounded-2xl border border-border-subtle bg-card p-7 transition-colors hover:border-accent-blue/50 sm:flex-row sm:items-center sm:justify-between sm:p-8"
+          >
+            <div>
+              <span className="font-mono text-xs uppercase tracking-[0.12em] text-accent-teal">
+                E-commerce &amp; marketplace services
+              </span>
+              <h2 className="mt-2 font-display text-xl font-semibold text-text-primary sm:text-2xl">
+                Selling on Amazon, Flipkart, Myntra or Meesho?
+              </h2>
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+                Explore our account management, advertising, SEO, analytics and operations services
+                for marketplace and D2C brands.
+              </p>
+            </div>
+            <ArrowRight className="size-5 shrink-0 text-text-muted transition-all group-hover:translate-x-1 group-hover:text-accent-blue" />
+          </Link>
+        </Container>
+      </section>
+
       <Process />
       <ContactCTA />
     </>

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { services } from "@/content/services";
+import { ecommerceServices } from "@/content/ecommerce-services";
+import { performanceServices } from "@/content/performance-marketing";
 import { caseStudies } from "@/content/case-studies";
 import { blogPosts } from "@/content/blog";
 
@@ -9,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/about",
     "/services",
+    "/ecommerce-services",
+    "/performance-marketing",
     "/portfolio",
     "/case-studies",
     "/blog",
@@ -30,6 +34,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const ecommerceServiceRoutes = ecommerceServices.map((s) => ({
+    url: `${siteConfig.url}/ecommerce-services/${s.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  const performanceServiceRoutes = performanceServices.map((s) => ({
+    url: `${siteConfig.url}/performance-marketing/${s.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   const caseStudyRoutes = caseStudies.map((c) => ({
     url: `${siteConfig.url}/case-studies/${c.slug}`,
     lastModified: new Date(),
@@ -44,5 +62,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...serviceRoutes, ...caseStudyRoutes, ...blogRoutes];
+  return [
+    ...staticRoutes,
+    ...serviceRoutes,
+    ...ecommerceServiceRoutes,
+    ...performanceServiceRoutes,
+    ...caseStudyRoutes,
+    ...blogRoutes,
+  ];
 }

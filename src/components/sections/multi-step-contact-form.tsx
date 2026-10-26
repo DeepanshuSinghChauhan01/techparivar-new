@@ -25,6 +25,8 @@ const projectTypes = [
   "Store migration",
   "CRO / Performance",
   "Custom app",
+  "E-commerce / marketplace management",
+  "Performance marketing (Meta / Google Ads)",
   "Not sure yet",
 ];
 

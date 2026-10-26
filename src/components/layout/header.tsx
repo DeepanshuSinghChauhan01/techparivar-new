@@ -83,7 +83,8 @@ export function Header() {
       <Container className="flex h-14 items-center justify-between lg:h-[72px]">
         <Logo />
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        {/* Tighter item padding between lg and xl keeps every link on one line at 1024px. */}
+        <nav className="hidden items-center gap-0.5 lg:flex xl:gap-1">
           {navLinks.map((link) =>
             "children" in link && link.children ? (
               <div
@@ -93,7 +94,7 @@ export function Header() {
                 onMouseLeave={() => setServicesOpen(false)}
               >
                 <button
-                  className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+                  className="flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:text-text-primary xl:px-4 xl:text-sm"
                   aria-expanded={servicesOpen}
                 >
                   {link.label}
@@ -120,7 +121,7 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary",
+                  "flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:text-text-primary xl:px-4 xl:text-sm",
                   link.href === "/login" &&
                     "border border-border-default text-vibrant-orange hover:border-vibrant-orange/60 hover:text-vibrant-orange"
                 )}
@@ -145,7 +146,8 @@ export function Header() {
           </div>
           <div className="hidden items-center gap-3 lg:flex">
             <Button href={siteConfig.calendlyUrl} variant="primary" size="sm" showArrow>
-              Book Free Consultation
+              <span className="xl:hidden">Book a Call</span>
+              <span className="hidden xl:inline">Book Free Consultation</span>
             </Button>
           </div>
 

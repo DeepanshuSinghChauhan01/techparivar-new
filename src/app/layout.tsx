@@ -1,21 +1,9 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+// Self-hosted instead of next/font/google so production builds don't depend
+// on reaching Google Fonts — see src/app/fonts/fonts.css.
+import "./fonts/fonts.css";
 import "./globals.css";
 import { siteConfig } from "@/lib/site-config";
-
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  display: "swap",
-});
-
-const jbMono = JetBrains_Mono({
-  variable: "--font-jbmono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -78,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full ${hanken.variable} ${jbMono.variable}`}>
+    <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col bg-base text-text-primary font-body antialiased">
         <script
           type="application/ld+json"
